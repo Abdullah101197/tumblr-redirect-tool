@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tumblr Redirect Test</title>
+    <!-- PASTE YOUR GENERATED SCRIPT BELOW THIS LINE -->
+
+    <!-- END OF GENERATED SCRIPT -->
+</head>
+<body>
+    <h1>Tumblr Mock Page</h1>
+    <p>If you see this content, the redirect did NOT trigger.</p>
+    <p>This could be because:</p>
+    <ul>
+        <li>The Post ID in the URL doesn't match your mapping.</li>
+        <li>There was an error in the script.</li>
+    </ul>
+
+    <script>
+        // MOCKING THE TUMBLR URL FOR TESTING
+        // Since we are on a local file, we "force" the script to see a Post ID
+        // by overriding the pathname property for this test session.
+        if (window.location.protocol === 'file:') {
+            console.log("Mocking Tumblr environment...");
+            Object.defineProperty(window.location, 'pathname', {
+                value: '/post/12345/test-post',
+                configurable: true
+            });
+        }
+    </script>
+</body>
+</html>

