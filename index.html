@@ -301,6 +301,12 @@
         .modal-overlay {
             backdrop-filter: blur(15px);
             background: rgba(0, 0, 0, 0.6);
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
         }
 
         .modal-content {
@@ -312,9 +318,91 @@
             box-shadow: 0 25px 70px rgba(0,0,0,0.5);
         }
 
+        /* AUTH OVERLAY */
+        #authOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            background-image: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.2), transparent);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-card {
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(20px);
+            padding: 48px;
+            border-radius: 32px;
+            width: 400px;
+            border: 1px solid var(--border);
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(0,0,0,0.2);
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .auth-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .admin-badge {
+            background: gold;
+            color: black;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
+
+    <!-- AUTH SCREEN -->
+    <div id="authOverlay">
+        <div class="auth-card">
+            <div class="logo" style="justify-content: center; margin-bottom: 24px;">🚀 RedirPro</div>
+            <h3 id="authTitle" style="margin-bottom: 10px;">Welcome Back</h3>
+            <p id="authSubtitle" style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 30px;">Login to manage your redirects</p>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="toggleAuth('login')">Login</div>
+                <div class="auth-tab" onclick="toggleAuth('signup')">Sign Up</div>
+            </div>
+
+            <div style="text-align: left; margin-bottom: 20px;">
+                <label style="font-size: 0.75rem; color: var(--primary-light);">EMAIL ADDRESS</label>
+                <input type="email" id="authEmail" placeholder="name@example.com">
+            </div>
+            <div style="text-align: left; margin-bottom: 30px;">
+                <label style="font-size: 0.75rem; color: var(--primary-light);">PASSWORD</label>
+                <input type="password" id="authPassword" placeholder="••••••••">
+            </div>
+
+            <button class="btn-add-map" style="width: 100%; padding: 16px;" id="authBtn" onclick="handleAuth()">Login</button>
+            <p id="authError" style="color: var(--danger); font-size: 0.8rem; margin-top: 15px; display: none;"></p>
+        </div>
+    </div>
 
     <aside>
         <div class="logo">🚀 RedirPro</div>
@@ -326,8 +414,14 @@
         
         <div style="margin-top: auto;">
             <div class="group-label">System</div>
+            <div class="group-item" id="adminBtn" style="display: none;" onclick="showAdminPanel()">
+                <span>👑 Super Admin</span>
+            </div>
             <div class="group-item" onclick="showCloudModal()">
                 <span>☁️ Cloud Settings</span>
+            </div>
+            <div class="group-item" onclick="logout()" style="color: var(--danger);">
+                <span>🚪 Logout</span>
             </div>
         </div>
     </aside>
@@ -444,19 +538,20 @@
         };
 
         let supabaseClient = null;
+        let currentUser = null;
+        let isAdmin = false;
+        const ADMIN_EMAIL = 'abdullah101197@gmail.com'; // Aapka email
 
         async function init() {
-            // Load local backup first
-            const saved = localStorage.getItem('redirpro_v3');
-            if (saved) appData = JSON.parse(saved);
-
-            if (appData.cloudConfig && appData.cloudConfig.url && appData.cloudConfig.key) {
-                initSupabase();
-                await fetchFromCloud();
+            // Check session
+            initSupabase();
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (session) {
+                onUserLogin(session.user);
+            } else {
+                document.getElementById('authOverlay').style.display = 'flex';
             }
-
-            renderGroups();
-            switchGroup(appData.current || "Default");
         }
 
         function initSupabase() {
@@ -465,18 +560,33 @@
             }
         }
 
+        async function onUserLogin(user) {
+            currentUser = user;
+            isAdmin = user.email === ADMIN_EMAIL;
+            
+            document.getElementById('authOverlay').style.display = 'none';
+            if (isAdmin) document.getElementById('adminBtn').style.display = 'flex';
+            
+            // Load local backup if exists, then cloud
+            const saved = localStorage.getItem('redirpro_v3');
+            if (saved) appData = JSON.parse(saved);
+
+            await fetchFromCloud();
+            renderGroups();
+            switchGroup(appData.current || "Default");
+        }
+
         async function fetchFromCloud() {
-            if (!supabaseClient) return;
+            if (!supabaseClient || !currentUser) return;
             try {
                 const { data, error } = await supabaseClient
                     .from('redir_pro')
                     .select('config_data')
-                    .eq('id', 1)
+                    .eq('user_id', currentUser.id)
                     .single();
                 
                 if (data && data.config_data) {
                     appData = { ...appData, ...data.config_data };
-                    console.log("Cloud sync complete");
                 }
             } catch (err) { console.error("Cloud fetch failed", err); }
         }
@@ -487,20 +597,18 @@
             const status = document.getElementById('syncStatus');
             const statusText = status.querySelector('.text');
             
-            if (!supabaseClient) {
-                status.style.color = 'var(--text-dim)';
-                statusText.innerText = 'Local Only (Setup Cloud)';
-                return;
-            }
+            if (!supabaseClient || !currentUser) return;
 
             status.classList.add('syncing');
             statusText.innerText = 'Cloud Syncing...';
 
             try {
-                // Upsert to Supabase
                 const { error } = await supabaseClient
                     .from('redir_pro')
-                    .upsert({ id: 1, config_data: appData });
+                    .upsert({ 
+                        user_id: currentUser.id, 
+                        config_data: appData 
+                    }, { onConflict: 'user_id' });
 
                 if (error) throw error;
 
@@ -513,6 +621,60 @@
                 status.style.color = 'var(--danger)';
                 statusText.innerText = 'Cloud Sync Failed';
             }
+        }
+
+        /* AUTH LOGIC */
+        let authMode = 'login';
+        function toggleAuth(mode) {
+            authMode = mode;
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('authTitle').innerText = mode === 'login' ? 'Welcome Back' : 'Create Account';
+            document.getElementById('authBtn').innerText = mode === 'login' ? 'Login' : 'Sign Up';
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const btn = document.getElementById('authBtn');
+            const err = document.getElementById('authError');
+
+            btn.disabled = true;
+            btn.innerText = 'Processing...';
+            err.style.display = 'none';
+
+            try {
+                let result;
+                if (authMode === 'login') {
+                    result = await supabaseClient.auth.signInWithPassword({ email, password });
+                } else {
+                    result = await supabaseClient.auth.signUp({ email, password });
+                }
+
+                if (result.error) throw result.error;
+                
+                if (authMode === 'signup') alert('Check your email for confirmation link!');
+                else onUserLogin(result.data.user);
+
+            } catch (e) {
+                err.innerText = e.message;
+                err.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = authMode === 'login' ? 'Login' : 'Sign Up';
+            }
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        }
+
+        async function showAdminPanel() {
+            if (!isAdmin) return;
+            const { data, error } = await supabaseClient.from('redir_pro').select('*, users:user_id(email)');
+            console.log("ADMIN DATA:", data);
+            alert("Check console (F12) for all users' data. Full Admin UI coming in next update!");
         }
 
         function renderGroups() {
