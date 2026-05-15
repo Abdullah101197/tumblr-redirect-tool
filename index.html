@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Min-Redir Pro | Multi-Group SaaS</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>Min-Redir Pro | SaaS Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -14,7 +12,6 @@
             --primary: #6366f1;
             --primary-glow: rgba(99, 102, 241, 0.4);
             --secondary: #a855f7;
-            --accent: #f43f5e;
             --bg: #020617;
             --sidebar-bg: rgba(15, 23, 42, 0.7);
             --card-bg: rgba(30, 41, 59, 0.4);
@@ -25,14 +22,10 @@
             --danger: #f43f5e;
         }
 
-        * { box-sizing: border-box; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        
+        * { box-sizing: border-box; transition: all 0.2s ease; }
         body {
             background-color: var(--bg);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 40%),
-                radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 40%),
-                radial-gradient(at 50% 100%, rgba(244, 63, 94, 0.05) 0px, transparent 40%);
+            background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%);
             color: var(--text);
             font-family: 'Outfit', sans-serif;
             margin: 0;
@@ -41,663 +34,214 @@
             overflow: hidden;
         }
 
-        /* SIDEBAR */
         aside {
-            width: 300px;
+            width: 280px;
             background: var(--sidebar-bg);
-            backdrop-filter: blur(24px);
+            backdrop-filter: blur(20px);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 40px 24px;
-            z-index: 100;
+            padding: 30px 20px;
+            z-index: 50;
         }
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 48px;
-            background: linear-gradient(to right, #fff, var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            letter-spacing: -1px;
-        }
+        .logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; color: white; }
+        
+        .user-profile { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+        .avatar { width: 36px; height: 36px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
 
-        .user-profile {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 32px;
-        }
+        .group-item { padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--text-dim); margin-bottom: 4px; }
+        .group-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .group-item.active { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); }
 
-        .avatar {
-            width: 40px; height: 40px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; color: white;
-        }
+        main { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
 
-        .user-info { overflow: hidden; }
-        .user-info .name { display: block; font-size: 0.9rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
-        .user-info .role { display: block; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--border); padding: 20px; border-radius: 20px; display: flex; align-items: center; gap: 15px; }
+        .stat-val { font-size: 1.5rem; font-weight: 800; display: block; }
+        .stat-label { font-size: 0.8rem; color: var(--text-dim); }
 
-        .group-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-dim);
-            margin-bottom: 20px;
-            font-weight: 700;
-            opacity: 0.5;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 30px; margin-bottom: 30px; }
+        
+        .script-box { background: #000; padding: 20px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #10b981; position: relative; border: 1px solid var(--border); line-height: 1.6; margin-top: 15px; }
 
-        .group-list {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding-right: 4px;
-        }
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #020617; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border); padding: 50px; border-radius: 30px; width: 420px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
 
-        .group-item {
-            padding: 14px 18px;
-            border-radius: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.95rem;
-            color: var(--text-dim);
-            border: 1px solid transparent;
-        }
+        input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: var(--primary); }
 
-        .group-item:hover {
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text);
-            transform: translateX(4px);
-        }
+        .btn { padding: 12px 24px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; justify-content: center; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
 
-        .group-item.active {
-            background: linear-gradient(135deg, var(--primary), #4f46e5);
-            color: white;
-            box-shadow: 0 8px 24px var(--primary-glow);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* MAIN CONTENT */
-        main {
-            flex: 1;
-            padding: 60px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-
-        .header-main {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .header-info h2 { margin: 0; font-size: 2.5rem; font-weight: 800; letter-spacing: -1.5px; }
-        .header-info p { color: var(--text-dim); margin: 8px 0 0; font-size: 1.1rem; }
-
-        /* DASHBOARD STATS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .stat-icon {
-            width: 56px; height: 56px;
-            border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--primary-light);
-        }
-
-        .stat-val { display: block; font-size: 1.5rem; font-weight: 800; }
-        .stat-label { font-size: 0.85rem; color: var(--text-dim); font-weight: 500; }
-
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            border-radius: 32px;
-            padding: 40px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
-        }
-
-        .script-box {
-            background: #000;
-            padding: 28px;
-            border-radius: 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            color: #10b981;
-            word-break: break-all;
-            position: relative;
-            border: 1px solid var(--border);
-            line-height: 1.7;
-        }
-
-        .toolbar { display: flex; gap: 16px; margin-bottom: 32px; }
-
-        .btn-action {
-            padding: 14px 28px;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text);
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .btn-action:hover { background: var(--border); transform: translateY(-2px); }
-        .btn-action.primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; box-shadow: 0 8px 20px var(--primary-glow); }
-
-        /* TABLE */
-        .table-container { border-radius: 20px; overflow: hidden; border: 1px solid var(--border); background: rgba(0,0,0,0.2); }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 20px; font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; background: rgba(255,255,255,0.02); }
-        td { padding: 24px 20px; border-bottom: 1px solid var(--border); font-size: 1rem; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255, 255, 255, 0.02); }
-
-        .btn-delete { color: var(--danger); background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); padding: 8px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-        .btn-delete:hover { background: var(--danger); color: white; transform: scale(1.05); }
-
-        /* TOAST */
-        #toast {
-            position: fixed;
-            bottom: 40px; right: 40px;
-            padding: 16px 24px;
-            border-radius: 16px;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            display: flex; align-items: center; gap: 12px;
-            z-index: 2000;
-            transform: translateY(150%);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        
+        #toast { position: fixed; bottom: 30px; right: 30px; padding: 15px 25px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; z-index: 10000; transform: translateY(200px); }
         #toast.show { transform: translateY(0); }
-
-        #authOverlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #020617;
-            background-image: 
-                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15), transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(244, 63, 94, 0.1), transparent 40%);
-            z-index: 1000;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        .auth-card {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(30px);
-            padding: 60px;
-            border-radius: 40px;
-            width: 480px;
-            border: 1px solid var(--border);
-            text-align: center;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
-        }
-
-        input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 18px 24px;
-            border-radius: 16px;
-            outline: none;
-            font-size: 1rem;
-            margin-bottom: 20px;
-        }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); }
+    </style>
 </head>
 <body>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast">
-        <i data-lucide="check-circle" style="color: var(--success)"></i>
-        <span id="toastMsg">Action Successful</span>
-    </div>
+    <div id="toast">Action Successful</div>
 
-    <!-- AUTH SCREEN -->
     <div id="authOverlay">
         <div class="auth-card">
-            <div class="logo" style="justify-content: center; margin-bottom: 30px;">
-                <i data-lucide="zap" style="color: var(--primary)"></i> RedirPro
-            </div>
-            <h2 id="authTitle" style="margin-bottom: 10px; font-weight: 800; font-size: 2rem;">Welcome Back</h2>
-            <p style="color: var(--text-dim); margin-bottom: 30px;">Enter your details to access your dashboard</p>
-            
-            <div class="auth-tabs" style="display: flex; gap: 10px; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 12px;">
-                <div class="auth-tab active" onclick="toggleAuth('login')" style="flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">Login</div>
-                <div class="auth-tab" onclick="toggleAuth('signup')" style="flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">Sign Up</div>
-            </div>
-
-            <div id="authError" style="display: none; color: var(--danger); background: rgba(244,63,94,0.1); padding: 12px; border-radius: 12px; margin-bottom: 20px; font-size: 0.85rem; border: 1px solid rgba(244,63,94,0.2);"></div>
-            
-            <input type="email" id="authEmail" placeholder="Email Address">
+            <h2 style="margin-bottom: 10px;">Welcome</h2>
+            <p style="color: var(--text-dim); margin-bottom: 30px;">Login to your dashboard</p>
+            <div id="authError" style="display:none; color: var(--danger); margin-bottom: 15px; font-size: 0.8rem;"></div>
+            <input type="email" id="authEmail" placeholder="Email">
             <input type="password" id="authPassword" placeholder="Password">
-            
-            <button id="authBtn" class="btn-action primary" onclick="handleAuth()" style="width: 100%; justify-content: center; height: 56px;">Login</button>
+            <button class="btn btn-primary" onclick="handleAuth()">Login</button>
+            <p style="margin-top: 20px; font-size: 0.8rem; color: var(--text-dim);">New here? <a href="#" onclick="toggleMode()" style="color: var(--primary)">Sign Up</a></p>
         </div>
     </div>
 
-    <!-- SIDEBAR -->
-    <aside>
-        <div class="logo">
-            <i data-lucide="zap" style="color: var(--primary); fill: var(--primary); fill-opacity: 0.2;"></i> RedirPro
-        </div>
-
+    <aside id="sidebar" style="display:none;">
+        <div class="logo"><i data-lucide="zap"></i> RedirPro</div>
         <div class="user-profile">
-            <div class="avatar" id="userAvatar">A</div>
-            <div class="user-info">
-                <span class="name" id="userName">User Name</span>
-                <span class="role">SaaS Member <span id="adminBadge" style="display:none" class="admin-badge">Admin</span></span>
-            </div>
+            <div class="avatar" id="avatar">U</div>
+            <div style="overflow:hidden"><div id="userName" style="font-weight:600; font-size:0.9rem;">User</div></div>
         </div>
-
-        <div class="group-label"><i data-lucide="layers" size="14"></i> Your Groups</div>
-        <div class="group-list" id="groupList">
-            <!-- Groups will appear here -->
-        </div>
-
-        <button class="btn-action" onclick="showModal()" style="margin-top: 24px; border-style: dashed; border-color: var(--primary); background: rgba(99, 102, 241, 0.05); color: var(--primary)">
-            <i data-lucide="plus-circle"></i> Create Group
-        </button>
-
-        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
-            <button class="group-item" onclick="showCloudModal()">
-                <i data-lucide="settings"></i> Cloud Config
-            </button>
-            <button class="group-item" id="adminBtn" style="display: none; color: gold;" onclick="showAdminPanel()">
-                <i data-lucide="crown"></i> Super Admin
-            </button>
-            <button class="group-item" onclick="logout()" style="color: var(--danger);">
-                <i data-lucide="log-out"></i> Logout
-            </button>
+        <div id="groupList"></div>
+        <button class="btn btn-outline" style="margin-top:20px;" onclick="createGroup()"><i data-lucide="plus"></i> New Group</button>
+        <div style="margin-top:auto;">
+            <button class="group-item" style="width:100%" onclick="logout()"><i data-lucide="log-out"></i> Logout</button>
         </div>
     </aside>
 
-    <!-- MAIN -->
-    <main>
-        <div id="mainPanel" style="display: none; flex-direction: column; gap: 40px;">
-            <div class="header-main">
-                <div class="header-info">
-                    <h2 id="currentGroupName">Default Group</h2>
-                    <p>Live script: <span id="filenameLabel" style="font-family: monospace; color: var(--primary-light)">data.json</span></p>
-                </div>
-                <div id="syncStatus">
-                    <i data-lucide="cloud-check"></i>
-                    <span class="text">Cloud Synced</span>
-                </div>
+    <main id="mainContent" style="display:none;">
+        <h2 id="currentGroup">Default</h2>
+        <div class="stats-grid">
+            <div class="stat-card"><div><span class="stat-val" id="statClicks">0</span><span class="stat-label">Clicks</span></div></div>
+            <div class="stat-card"><div><span class="stat-val" id="statRedirects">0</span><span class="stat-label">Redirects</span></div></div>
+            <div class="stat-card"><div><span class="stat-val">Live</span><span class="stat-label">Status</span></div></div>
+        </div>
+
+        <div class="card">
+            <h3>Master Script</h3>
+            <div class="script-box" id="scriptBox">// Loading...</div>
+            <button class="btn btn-outline" style="margin-top:10px" onclick="copyScript()">Copy</button>
+        </div>
+
+        <div class="card">
+            <h3>Mappings</h3>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="text" id="newId" placeholder="Post ID" style="margin:0">
+                <input type="text" id="newUrl" placeholder="Target URL" style="margin:0">
+                <button class="btn btn-primary" onclick="addMap()" style="width:auto">Add</button>
             </div>
-
-            <!-- STATS GRID -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon"><i data-lucide="mouse-pointer-click" style="color: var(--secondary)"></i></div>
-                    <div>
-                        <span class="stat-val" id="statClicks">0</span>
-                        <span class="stat-label">Total Clicks</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i data-lucide="link"></i></div>
-                    <div>
-                        <span class="stat-val" id="statRedirects">0</span>
-                        <span class="stat-label">Total Redirects</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i data-lucide="activity" style="color: var(--success)"></i></div>
-                    <div>
-                        <span class="stat-val" style="color: var(--success)">Live</span>
-                        <span class="stat-label">System Active</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ANALYTICS PREVIEW -->
-            <div class="card" style="padding: 24px;">
-                <div class="group-label" style="margin-bottom: 0; opacity: 1; color: var(--text); display: flex; justify-content: space-between;">
-                    <span><i data-lucide="bar-chart-3"></i> Recent Traffic</span>
-                    <span style="font-size: 0.7rem; color: var(--text-dim)">Real-time updates</span>
-                </div>
-                <div id="analyticsPlaceholder" style="margin-top: 20px; font-size: 0.85rem; color: var(--text-dim); text-align: center; border: 1px dashed var(--border); padding: 20px; border-radius: 16px;">
-                    Clicks will start appearing here as they happen.
-                </div>
-            </div>
-
-            <!-- SCRIPT CARD -->
-            <div class="card">
-                <div class="group-label" style="margin-bottom: 24px; opacity: 1; color: var(--primary-light)"><i data-lucide="code"></i> Master Script (Paste in Tumblr)</div>
-                <div class="script-box">
-                    <div id="installScript">// Fetching...</div>
-                    <button class="copy-btn" onclick="copyScript()" style="top: 24px; right: 24px;">Copy Script</button>
-                </div>
-            </div>
-
-            <!-- TABLE CARD -->
-            <div class="card" style="padding-top: 32px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-                    <div class="group-label" style="margin: 0; opacity: 1; color: var(--primary-light)"><i data-lucide="list"></i> Redirect Mappings</div>
-                    <div class="toolbar" style="margin: 0;">
-                        <button class="btn-action" onclick="deleteGroup()" style="color: var(--danger)">
-                            <i data-lucide="trash-2"></i> Delete Group
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-add" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; margin-bottom: 32px; background: rgba(0,0,0,0.2); padding: 24px; border-radius: 20px; border: 1px solid var(--border);">
-                    <input type="text" id="newId" placeholder="Post ID (e.g. 1234567890)" style="margin: 0">
-                    <input type="text" id="newUrl" placeholder="Redirect URL" style="margin: 0">
-                    <button class="btn-action primary" onclick="addMap()" style="padding: 0 32px; height: 56px;">
-                        <i data-lucide="plus"></i> Add Redirect
-                    </button>
-                </div>
-
-                <div id="emptyState" style="text-align: center; padding: 60px 0; display: none;">
-                    <i data-lucide="inbox" size="48" style="opacity: 0.1; margin-bottom: 16px;"></i>
-                    <p style="color: var(--text-dim)">No redirects found in this group.</p>
-                </div>
-
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tumblr Post ID</th>
-                                <th>Target Destination</th>
-                                <th style="text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="redirectList"></tbody>
-                    </table>
-                </div>
-            </div>
+            <table>
+                <thead><tr><th>Post ID</th><th>Target</th><th>Action</th></tr></thead>
+                <tbody id="mapList"></tbody>
+            </table>
         </div>
     </main>
 
-    <!-- MODALS -->
-    <div id="modal" class="modal-overlay" onclick="if(event.target==this)hideModal()">
-        <div class="auth-card" style="width: 400px; padding: 40px;">
-            <h3 style="margin: 0 0 24px; font-size: 1.5rem;">Create Group</h3>
-            <input type="text" id="groupNameInput" placeholder="Group Name (e.g. Movie Blog)">
-            <button class="btn-action primary" onclick="createGroup()" style="width: 100%; justify-content: center;">Create</button>
-        </div>
-    </div>
-
-    <div id="cloudModal" class="modal-overlay" onclick="if(event.target==this)hideCloudModal()">
-        <div class="auth-card" style="width: 440px; padding: 40px;">
-            <h3 style="margin: 0 0 10px; font-size: 1.5rem;">Cloud Settings</h3>
-            <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 24px;">Supabase connection details</p>
-            <label style="text-align: left; display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">Project URL</label>
-            <input type="text" id="sbUrl" placeholder="https://xyz.supabase.co">
-            <label style="text-align: left; display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">Public API Key</label>
-            <input type="text" id="sbKey" placeholder="public-anon-key">
-            <button class="btn-action primary" onclick="saveCloudConfig()" style="width: 100%; justify-content: center;">Save & Sync</button>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        let _0x4a2e = { groups: { "Default": { redirects: {}, filename: "data.json" } }, current: "Default", cloudConfig: { url: 'https://rcajnmkktjntwhlxsxhd.supabase.co', key: 'sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM' } };
-        let _0x1b3c = null, _0x5f2d = null, _0xAdmin = false;
-        const _0xAuthID = 'abdullah101197@gmail.com';
+        let _config = { groups: { "Default": { redirects: {} } }, current: "Default", cloud: { url: 'https://rcajnmkktjntwhlxsxhd.supabase.co', key: 'sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM' } };
+        let _sb = null, _user = null;
+        let _mode = 'login';
 
-        function showToast(m) {
-            const t = document.getElementById('toast');
-            document.getElementById('toastMsg').innerText = m;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
+        function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
 
         async function init() {
-            try {
-                _0xInitS();
-                const { data: { session: _0xS } } = await _0x1b3c.auth.getSession();
-                if (_0xS) { 
-                    _0xOnL(_0xS.user); 
-                } else { 
-                    document.getElementById('authOverlay').style.display = 'flex';
-                    document.getElementById('mainPanel').style.display = 'none';
-                }
-                lucide.createIcons();
-            } catch (e) {
-                console.error("Init failed:", e);
-                document.getElementById('authOverlay').style.display = 'flex';
-            }
-        }
-
-        function _0xInitS() {
-            if (_0x4a2e.cloudConfig.url && _0x4a2e.cloudConfig.key) {
-                _0x1b3c = supabase.createClient(_0x4a2e.cloudConfig.url, _0x4a2e.cloudConfig.key);
-            }
-        }
-
-        async function _0xOnL(_0xU) {
-            _0x5f2d = _0xU;
-            _0xAdmin = _0xU.email === _0xAuthID;
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('mainPanel').style.display = 'flex';
-            document.getElementById('userName').innerText = _0xU.email.split('@')[0];
-            document.getElementById('userAvatar').innerText = _0xU.email[0].toUpperCase();
-            if (_0xAdmin) {
-                const b = document.getElementById('adminBtn');
-                const badge = document.getElementById('adminBadge');
-                if(b) b.style.display = 'flex';
-                if(badge) badge.style.display = 'inline-block';
-            }
-            const _0xSv = localStorage.getItem('redirpro_v3');
-            if (_0xSv) _0x4a2e = JSON.parse(_0xSv);
-            await _0xfCloud();
-            renderGroups();
-            switchGroup(_0x4a2e.current || "Default");
-            _fAn();
-            showToast("Welcome back!");
-        }
-
-        async function _0xfCloud() {
-            if (!_0x1b3c || !_0x5f2d) return;
-            try {
-                const { data: _0xD } = await _0x1b3c.from('redir_pro').select('config_data').eq('user_id', _0x5f2d.id).single();
-                if (_0xD && _0xD.config_data) _0x4a2e = { ..._0x4a2e, ..._0xD.config_data };
-            } catch (_0xE) {}
-        }
-
-        async function save() {
-            localStorage.setItem('redirpro_v3', JSON.stringify(_0x4a2e));
-            const _0xSt = document.getElementById('syncStatus');
-            const _0xStX = _0xSt.querySelector('.text');
-            if (!_0x1b3c || !_0x5f2d) return;
-            _0xSt.classList.add('syncing');
-            _0xStX.innerText = 'Syncing...';
-            try {
-                const { error: _0xErr } = await _0x1b3c.from('redir_pro').upsert({ user_id: _0x5f2d.id, config_data: _0x4a2e }, { onConflict: 'user_id' });
-                if (_0xErr) throw _0xErr;
-                _0xSt.classList.remove('syncing');
-                _0xSt.style.color = 'var(--success)';
-                _0xStX.innerText = 'Cloud Synced';
-                _uS();
-            } catch (_0xErr) {
-                _0xSt.classList.remove('syncing');
-                _0xSt.style.color = 'var(--danger)';
-                _0xStX.innerText = 'Sync Failed';
-            }
-        }
-
-        async function _fAn() {
-            if (!_0x1b3c || !_0x5f2d) return;
-            const { count } = await _0x1b3c.from('clicks').select('*', { count: 'exact', head: true }).eq('user_id', _0x5f2d.id);
-            document.getElementById('statClicks').innerText = count || 0;
-            
-            const { data } = await _0x1b3c.from('clicks').select('*').eq('user_id', _0x5f2d.id).order('created_at', { ascending: false }).limit(5);
-            if (data && data.length > 0) {
-                const h = data.map(c => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>🎯 ${c.post_id}</span><span style="color:var(--primary-light)">${new Date(c.created_at).toLocaleTimeString()}</span></div>`).join('');
-                document.getElementById('analyticsPlaceholder').innerHTML = h;
-            }
-        }
-
-        function _uS() {
-            let total = 0;
-            Object.values(_0x4a2e.groups).forEach(g => total += Object.keys(g.redirects).length);
-            document.getElementById('statRedirects').innerText = total;
-        }
-
-        let _0xAM = 'login';
-        function toggleAuth(_0xM) {
-            _0xAM = _0xM;
-            document.querySelectorAll('.auth-tab').forEach(_0xT => _0xT.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('authTitle').innerText = _0xM === 'login' ? 'Welcome Back' : 'Create Account';
-            document.getElementById('authBtn').innerText = _0xM === 'login' ? 'Login' : 'Sign Up';
+            _sb = supabase.createClient(_config.cloud.url, _config.cloud.key);
+            const { data: { session } } = await _sb.auth.getSession();
+            if (session) { onLogin(session.user); }
+            lucide.createIcons();
         }
 
         async function handleAuth() {
-            const _0xEm = document.getElementById('authEmail').value;
-            const _0xPs = document.getElementById('authPassword').value;
-            const _0xBt = document.getElementById('authBtn');
-            const _0xEr = document.getElementById('authError');
-            _0xBt.disabled = true; _0xBt.innerText = '...'; _0xEr.style.display = 'none';
+            const email = document.getElementById('authEmail').value;
+            const pass = document.getElementById('authPassword').value;
+            const err = document.getElementById('authError');
             try {
-                let _0xR;
-                if (_0xAM === 'login') _0xR = await _0x1b3c.auth.signInWithPassword({ email: _0xEm, password: _0xPs });
-                else _0xR = await _0x1b3c.auth.signUp({ email: _0xEm, password: _0xPs });
-                if (_0xR.error) throw _0xR.error;
-                if (_0xAM === 'signup') showToast('Check email for verification!');
-                else _0xOnL(_0xR.data.user);
-            } catch (_0xE) { _0xEr.innerText = _0xE.message; _0xEr.style.display = 'block'; }
-            finally { _0xBt.disabled = false; _0xBt.innerText = _0xAM === 'login' ? 'Login' : 'Sign Up'; }
+                let res;
+                if (_mode === 'login') res = await _sb.auth.signInWithPassword({ email, password: pass });
+                else res = await _sb.auth.signUp({ email, password: pass });
+                if (res.error) throw res.error;
+                if (_mode === 'login') onLogin(res.data.user);
+                else showToast("Check email!");
+            } catch (e) { err.innerText = e.message; err.style.display = 'block'; }
         }
 
-        async function logout() { await _0x1b3c.auth.signOut(); window.location.reload(); }
+        async function onLogin(u) {
+            _user = u;
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('sidebar').style.display = 'flex';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('userName').innerText = u.email;
+            document.getElementById('avatar').innerText = u.email[0].toUpperCase();
+            
+            const { data } = await _sb.from('redir_pro').select('config_data').eq('user_id', u.id).single();
+            if (data) _config = { ..._config, ...data.config_data };
+            
+            render();
+        }
 
-        function renderGroups() {
-            const _0xL = document.getElementById('groupList');
-            _0xL.innerHTML = '';
-            Object.keys(_0x4a2e.groups).forEach(_0xN => {
-                const _0xV = document.createElement('div');
-                _0xV.className = `group-item ${_0xN === _0x4a2e.current ? 'active' : ''}`;
-                _0xV.innerHTML = `<i data-lucide="folder"></i> <span>${_0xN}</span>`;
-                _0xV.onclick = () => switchGroup(_0xN);
-                _0xL.appendChild(_0xV);
+        function render() {
+            const list = document.getElementById('groupList');
+            list.innerHTML = '';
+            Object.keys(_config.groups).forEach(g => {
+                const div = document.createElement('div');
+                div.className = `group-item ${g === _config.current ? 'active' : ''}`;
+                div.innerHTML = `<i data-lucide="folder"></i> ${g}`;
+                div.onclick = () => { _config.current = g; render(); };
+                list.appendChild(div);
             });
+            
+            const group = _config.groups[_config.current];
+            const mList = document.getElementById('mapList');
+            mList.innerHTML = '';
+            let total = 0;
+            Object.keys(group.redirects).forEach(id => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${id}</td><td>${group.redirects[id]}</td><td><button onclick="delMap('${id}')">Del</button></td>`;
+                mList.appendChild(tr);
+                total++;
+            });
+            
+            document.getElementById('statRedirects').innerText = total;
+            document.getElementById('currentGroup').innerText = _config.current;
+            updateScript();
             lucide.createIcons();
-            _uS();
-        }
-
-        function switchGroup(_0xN) {
-            _0x4a2e.current = _0xN;
-            document.getElementById('mainPanel').style.display = 'flex';
-            document.getElementById('currentGroupName').innerText = _0xN;
-            document.getElementById('filenameLabel').innerText = _0x4a2e.groups[_0xN].filename;
-            renderGroups(); renderTable(); updateScript(); save(); _fAn();
-        }
-
-        function renderTable() {
-            const _0xL = document.getElementById('redirectList');
-            const _0xEs = document.getElementById('emptyState');
-            const _0xM = _0x4a2e.groups[_0x4a2e.current].redirects;
-            const _0xK = Object.keys(_0xM);
-            _0xL.innerHTML = '';
-            if (_0xK.length === 0) _0xEs.style.display = 'block';
-            else {
-                _0xEs.style.display = 'none';
-                _0xK.forEach(_0xI => {
-                    const _0xTr = document.createElement('tr');
-                    _0xTr.innerHTML = `<td style="font-family: 'JetBrains Mono'; color: var(--primary-light)">${_0xI}</td><td style="color: var(--text-dim); font-size: 0.9rem;">${_0xM[_0xI]}</td><td style="text-align: right;"><button class="btn-delete" onclick="deleteMap('${_0xI}')">Delete</button></td>`;
-                    _0xL.appendChild(_0xTr);
-                });
-            }
         }
 
         function updateScript() {
-            const _0xGn = _0x4a2e.current, _0xUr = _0x4a2e.cloudConfig.url, _0xKy = _0x4a2e.cloudConfig.key;
-            if (!_0xUr || !_0xKy) { document.getElementById('installScript').innerText = "// SETUP CLOUD"; return; }
-            const _0xP = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#020617;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#fff;';b.innerHTML='<div style="text-align:center"><div style="width:40px;height:40px;border:4px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:s 1s infinite linear"></' + 'div><style>@keyframes s{to{transform:rotate(360deg)}}</' + 'style></' + 'div>';d.documentElement.appendChild(b);fetch('${_0xUr}/rest/v1/redir_pro?select=config_data&user_id=eq.${_0x5f2d.id}',{headers:{'apikey':'${_0xKy}','Authorization':'Bearer ${_0xKy}'}}).then(r=>r.json()).then(j=>{var m=j[0].config_data.groups['${_0xGn}'].redirects;var p=location.href.match(/\\d{10,}/);var u=p?m[p[0]]:null;if(u){fetch('${_0xUr}/rest/v1/clicks',{method:'POST',headers:{'apikey':'${_0xKy}','Authorization':'Bearer ${_0xKy}','Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({user_id:'${_0x5f2d.id}',group_name:'${_0xGn}',post_id:p[0]})}).then(()=>location.replace(u)).catch(()=>location.replace(u))}else b.remove();}).catch(()=>b.remove())})()<\/script' + '>';
-            document.getElementById('installScript').innerText = _0xP;
+            const script = `<script>(function(){
+                var p = location.href.match(/\\d{10,}/);
+                if(!p) return;
+                var u = 'https://rcajnmkktjntwhlxsxhd.supabase.co';
+                var k = 'sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM';
+                fetch(u+'/rest/v1/redir_pro?select=config_data&user_id=eq.${_user.id}',{headers:{'apikey':k,'Authorization':'Bearer '+k}})
+                .then(r=>r.json()).then(j=>{
+                    var m = j[0].config_data.groups['${_config.current}'].redirects[p[0]];
+                    if(m) {
+                        fetch(u+'/rest/v1/clicks',{method:'POST',headers:{'apikey':k,'Authorization':'Bearer '+k,'Content-Type':'application/json'},
+                        body:JSON.stringify({user_id:'${_user.id}',group_name:'${_config.current}',post_id:p[0]})})
+                        .then(()=>location.replace(m)).catch(()=>location.replace(m));
+                    }
+                });
+            })()<\/script>`;
+            document.getElementById('scriptBox').innerText = script;
         }
 
-        function addMap() {
-            const _0xI = document.getElementById('newId').value.trim(), _0xU = document.getElementById('newUrl').value.trim();
-            if (!_0xI || !_0xU) return showToast('Fill both fields!');
-            _0x4a2e.groups[_0x4a2e.current].redirects[_0xI] = _0xU;
-            document.getElementById('newId').value = ''; document.getElementById('newUrl').value = '';
-            renderTable(); save(); showToast('Redirect added!');
+        async function addMap() {
+            const id = document.getElementById('newId').value;
+            const url = document.getElementById('newUrl').value;
+            _config.groups[_config.current].redirects[id] = url;
+            await save(); render();
         }
 
-        function deleteMap(_0xI) { delete _0x4a2e.groups[_0x4a2e.current].redirects[_0xI]; renderTable(); save(); showToast('Redirect deleted!'); }
-
-        function createGroup() {
-            const _0xN = document.getElementById('groupNameInput').value.trim();
-            if (!_0xN || _0x4a2e.groups[_0xN]) return showToast('Invalid name!');
-            _0x4a2e.groups[_0xN] = { redirects: {}, filename: _0xN.toLowerCase().replace(/\s+/g, '-') + '.json' };
-            hideModal(); switchGroup(_0xN); showToast('Group created!');
+        async function save() {
+            await _sb.from('redir_pro').upsert({ user_id: _user.id, config_data: _config });
         }
 
-        function deleteGroup() {
-            if (_0x4a2e.current === 'Default') return showToast('Cannot delete Default!');
-            if (confirm(`Delete ${_0x4a2e.current}?`)) { delete _0x4a2e.groups[_0x4a2e.current]; switchGroup('Default'); showToast('Group deleted!'); }
-        }
-
-        function showModal() { document.getElementById('modal').style.display = 'flex'; }
-        function hideModal() { document.getElementById('modal').style.display = 'none'; }
-        function showCloudModal() { document.getElementById('sbUrl').value = _0x4a2e.cloudConfig.url; document.getElementById('sbKey').value = _0x4a2e.cloudConfig.key; document.getElementById('cloudModal').style.display = 'flex'; }
-        function hideCloudModal() { document.getElementById('cloudModal').style.display = 'none'; }
-        async function saveCloudConfig() {
-            _0x4a2e.cloudConfig.url = document.getElementById('sbUrl').value.trim();
-            _0x4a2e.cloudConfig.key = document.getElementById('sbKey').value.trim();
-            hideCloudModal(); _0xInitS(); await save(); updateScript(); renderGroups(); showToast('Cloud config saved!');
-        }
-
-        async function showAdminPanel() {
-            if (!_0xAdmin) return;
-            const { data } = await _0x1b3c.from('redir_pro').select('*, users:user_id(email)');
-            console.log("ADMIN DATA:", data);
-            showToast("Admin data sent to console (F12)");
-        }
-
-        function copyScript() {
-            const _0xT = document.getElementById('installScript').innerText;
-            navigator.clipboard.writeText(_0xT);
-            showToast('Script copied to clipboard!');
-        }
-
+        function toggleMode() { _mode = _mode === 'login' ? 'signup' : 'login'; handleAuth(); }
+        async function logout() { await _sb.auth.signOut(); location.reload(); }
         init();
     </script>
 </body>
