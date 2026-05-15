@@ -438,6 +438,13 @@
             <!-- STATS GRID -->
             <div class="stats-grid">
                 <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="mouse-pointer-click" style="color: var(--secondary)"></i></div>
+                    <div>
+                        <span class="stat-val" id="statClicks">0</span>
+                        <span class="stat-label">Total Clicks</span>
+                    </div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-icon"><i data-lucide="link"></i></div>
                     <div>
                         <span class="stat-val" id="statRedirects">0</span>
@@ -445,18 +452,22 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon"><i data-lucide="folder"></i></div>
-                    <div>
-                        <span class="stat-val" id="statGroups">1</span>
-                        <span class="stat-label">Active Groups</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i data-lucide="activity"></i></div>
+                    <div class="stat-icon"><i data-lucide="activity" style="color: var(--success)"></i></div>
                     <div>
                         <span class="stat-val" style="color: var(--success)">Live</span>
-                        <span class="stat-label">System Status</span>
+                        <span class="stat-label">System Active</span>
                     </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS PREVIEW -->
+            <div class="card" style="padding: 24px;">
+                <div class="group-label" style="margin-bottom: 0; opacity: 1; color: var(--text); display: flex; justify-content: space-between;">
+                    <span><i data-lucide="bar-chart-3"></i> Recent Traffic</span>
+                    <span style="font-size: 0.7rem; color: var(--text-dim)">Real-time updates</span>
+                </div>
+                <div id="analyticsPlaceholder" style="margin-top: 20px; font-size: 0.85rem; color: var(--text-dim); text-align: center; border: 1px dashed var(--border); padding: 20px; border-radius: 16px;">
+                    Clicks will start appearing here as they happen.
                 </div>
             </div>
 
@@ -571,6 +582,7 @@
             await _0xfCloud();
             renderGroups();
             switchGroup(_0x4a2e.current || "Default");
+            _fAn();
             showToast("Welcome back!");
         }
 
@@ -603,11 +615,22 @@
             }
         }
 
+        async function _fAn() {
+            if (!_0x1b3c || !_0x5f2d) return;
+            const { count } = await _0x1b3c.from('clicks').select('*', { count: 'exact', head: true }).eq('user_id', _0x5f2d.id);
+            document.getElementById('statClicks').innerText = count || 0;
+            
+            const { data } = await _0x1b3c.from('clicks').select('*').eq('user_id', _0x5f2d.id).order('created_at', { ascending: false }).limit(5);
+            if (data && data.length > 0) {
+                const h = data.map(c => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>🎯 ${c.post_id}</span><span style="color:var(--primary-light)">${new Date(c.created_at).toLocaleTimeString()}</span></div>`).join('');
+                document.getElementById('analyticsPlaceholder').innerHTML = h;
+            }
+        }
+
         function _uS() {
             let total = 0;
             Object.values(_0x4a2e.groups).forEach(g => total += Object.keys(g.redirects).length);
             document.getElementById('statRedirects').innerText = total;
-            document.getElementById('statGroups').innerText = Object.keys(_0x4a2e.groups).length;
         }
 
         let _0xAM = 'login';
@@ -657,7 +680,7 @@
             document.getElementById('mainPanel').style.display = 'flex';
             document.getElementById('currentGroupName').innerText = _0xN;
             document.getElementById('filenameLabel').innerText = _0x4a2e.groups[_0xN].filename;
-            renderGroups(); renderTable(); updateScript(); save();
+            renderGroups(); renderTable(); updateScript(); save(); _fAn();
         }
 
         function renderTable() {
@@ -680,7 +703,7 @@
         function updateScript() {
             const _0xGn = _0x4a2e.current, _0xUr = _0x4a2e.cloudConfig.url, _0xKy = _0x4a2e.cloudConfig.key;
             if (!_0xUr || !_0xKy) { document.getElementById('installScript').innerText = "// SETUP CLOUD"; return; }
-            const _0xP = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#020617;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#fff;';b.innerHTML='<div style="text-align:center"><div style="width:40px;height:40px;border:4px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:s 1s infinite linear"></div><style>@keyframes s{to{transform:rotate(360deg)}}</style></div>';d.documentElement.appendChild(b);fetch('${_0xUr}/rest/v1/redir_pro?select=config_data&user_id=eq.${_0x5f2d.id}',{headers:{'apikey':'${_0xKy}','Authorization':'Bearer ${_0xKy}'}}).then(r=>r.json()).then(j=>{var m=j[0].config_data.groups['${_0xGn}'].redirects;var u=m[location.href.match(/\\d{10,}/)];if(u)location.replace(u);else b.remove();}).catch(()=>b.remove())})()<\/script>`;
+            const _0xP = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#020617;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#fff;';b.innerHTML='<div style="text-align:center"><div style="width:40px;height:40px;border:4px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:s 1s infinite linear"></div><style>@keyframes s{to{transform:rotate(360deg)}}</style></div>';d.documentElement.appendChild(b);fetch('${_0xUr}/rest/v1/redir_pro?select=config_data&user_id=eq.${_0x5f2d.id}',{headers:{'apikey':'${_0xKy}','Authorization':'Bearer ${_0xKy}'}}).then(r=>r.json()).then(j=>{var m=j[0].config_data.groups['${_0xGn}'].redirects;var p=location.href.match(/\\d{10,}/);var u=m[p];if(u){fetch('${_0xUr}/rest/v1/clicks',{method:'POST',headers:{'apikey':'${_0xKy}','Authorization':'Bearer ${_0xKy}','Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({user_id:'${_0x5f2d.id}',group_name:'${_0xGn}',post_id:p[0]})}).then(()=>location.replace(u)).catch(()=>location.replace(u))}else b.remove();}).catch(()=>b.remove())})()<\/script>`;
             document.getElementById('installScript').innerText = _0xP;
         }
 
