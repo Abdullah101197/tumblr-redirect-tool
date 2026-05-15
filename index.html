@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Min-Redir Pro Dashboard</title>
+    <title>Min-Redir Pro Dashboard (Static)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
@@ -18,6 +18,7 @@
             --text-dim: #9ca3af;
             --accent: #818cf8;
             --danger: #ef4444;
+            --success: #10b981;
         }
 
         * { box-sizing: border-box; }
@@ -35,7 +36,7 @@
 
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 850px;
             display: flex;
             flex-direction: column;
             gap: 24px;
@@ -97,14 +98,13 @@
             opacity: 0.3;
         }
 
-        /* Script Area */
         .script-box {
             background: #000;
             border-radius: 12px;
             padding: 16px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
-            color: #10b981;
+            color: var(--success);
             word-break: break-all;
             border: 1px solid #222;
             position: relative;
@@ -126,13 +126,36 @@
             transition: all 0.2s;
         }
 
-        .copy-btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .copy-btn:hover { background: var(--primary-hover); }
 
-        /* Table */
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-tool {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-tool:hover { background: var(--border); border-color: var(--text-dim); }
+        .btn-tool.primary { background: var(--primary); border: none; color: white; }
+        .btn-tool.primary:hover { background: var(--primary-hover); }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
         }
 
         th {
@@ -161,24 +184,15 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.75rem;
-            transition: all 0.2s;
         }
 
         .btn-delete:hover { background: var(--danger); color: white; }
 
-        /* Form */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1.5fr auto;
             gap: 12px;
             align-items: end;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            margin-bottom: 6px;
         }
 
         input {
@@ -189,7 +203,6 @@
             padding: 12px;
             border-radius: 8px;
             outline: none;
-            transition: border-color 0.2s;
         }
 
         input:focus { border-color: var(--primary); }
@@ -202,25 +215,14 @@
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        .btn-add:hover { background: var(--primary-hover); }
+        .empty-state { text-align: center; padding: 40px; color: var(--text-dim); font-style: italic; }
+        
+        #fileInput { display: none; }
 
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-dim);
-            font-style: italic;
-            font-size: 0.9rem;
-        }
-
-        /* Animations */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .card { animation: fadeIn 0.4s ease forwards; }
-        .card:nth-child(2) { animation-delay: 0.1s; }
-        .card:nth-child(3) { animation-delay: 0.2s; }
-
     </style>
 </head>
 <body>
@@ -228,13 +230,16 @@
     <div class="container">
         <header>
             <h1>Min-Redir Pro</h1>
-            <p>Smart Redirect Dashboard for Tumblr</p>
+            <p>Advanced Tumblr Redirect Manager (JS Edition)</p>
         </header>
 
         <!-- SECTION 1: INSTALLATION -->
         <div class="card">
             <div class="section-title"><span></span>Installation Script (Copy Once)</div>
-            <p style="font-size: 0.85rem; color: var(--text-dim); margin: 0 0 16px;">Paste this script into your Tumblr theme's <code>&lt;head&gt;</code> section. It will automatically fetch your redirects.</p>
+            <p style="font-size: 0.85rem; color: var(--text-dim); margin: 0 0 16px;">
+                Paste this into Tumblr's <code>&lt;head&gt;</code>. 
+                <strong>Important:</strong> You must host the <code>data.json</code> file in the same folder as this dashboard.
+            </p>
             <div class="script-box">
                 <button class="copy-btn" onclick="copyScript()">Copy</button>
                 <code id="installScript"></code>
@@ -243,7 +248,24 @@
 
         <!-- SECTION 2: REDIRECT PANEL -->
         <div class="card">
-            <div class="section-title"><span></span>Auto-Updating Redirect Panel</div>
+            <div class="section-title"><span></span>Redirect Management Panel</div>
+            
+            <div class="toolbar">
+                <button class="btn-tool primary" onclick="document.getElementById('fileInput').click()">
+                    <span>⬆</span> Upload JSON/CSV
+                </button>
+                <button class="btn-tool" onclick="downloadJSON()">
+                    <span>⬇</span> Download data.json
+                </button>
+                <button class="btn-tool" onclick="downloadCSV()">
+                    <span>📄</span> Export to CSV
+                </button>
+                <button class="btn-tool" onclick="clearData()" style="color: var(--danger);">
+                    <span>✖</span> Clear All
+                </button>
+                <input type="file" id="fileInput" accept=".json,.csv" onchange="handleFileUpload(event)">
+            </div>
+
             <div id="panelContent">
                 <table>
                     <thead>
@@ -253,11 +275,9 @@
                             <th style="width: 50px;"></th>
                         </tr>
                     </thead>
-                    <tbody id="redirectList">
-                        <!-- Items injected here -->
-                    </tbody>
+                    <tbody id="redirectList"></tbody>
                 </table>
-                <div id="emptyState" class="empty-state" style="display: none;">No redirects found. Add one below.</div>
+                <div id="emptyState" class="empty-state">No redirects found.</div>
             </div>
         </div>
 
@@ -266,12 +286,10 @@
             <div class="section-title"><span></span>Add New Redirect</div>
             <div class="form-grid">
                 <div class="input-group">
-                    <label>Post ID</label>
-                    <input type="text" id="newId" placeholder="e.g. 72608581021">
+                    <input type="text" id="newId" placeholder="Post ID">
                 </div>
                 <div class="input-group">
-                    <label>Destination URL</label>
-                    <input type="text" id="newUrl" placeholder="https://example.com/target">
+                    <input type="text" id="newUrl" placeholder="Destination URL">
                 </div>
                 <button class="btn-add" onclick="addRedirect()">Add Mapping</button>
             </div>
@@ -281,27 +299,17 @@
     <script>
         let mappings = {};
 
-        async function loadData() {
-            try {
-                const res = await fetch('api.php?action=load');
-                mappings = await res.json();
-                renderTable();
-                updateScript();
-            } catch (e) {
-                console.error('Failed to load data', e);
-            }
+        // Load from LocalStorage on start
+        function init() {
+            const saved = localStorage.getItem('tm_mappings');
+            if (saved) mappings = JSON.parse(saved);
+            renderTable();
+            updateScript();
         }
 
-        async function saveData() {
-            try {
-                await fetch('api.php?action=save', {
-                    method: 'POST',
-                    body: JSON.stringify(mappings)
-                });
-                renderTable();
-            } catch (e) {
-                alert('Failed to save data');
-            }
+        function saveLocal() {
+            localStorage.setItem('tm_mappings', JSON.stringify(mappings));
+            renderTable();
         }
 
         function renderTable() {
@@ -329,31 +337,78 @@
         function updateScript() {
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
             const apiUrl = baseUrl + 'data.json';
-            
-            // Generate a lightweight, obfuscated-looking loader
             const payload = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:999999;display:flex;align-items:center;justify-content:center;';b.innerText='Loading...';d.documentElement.appendChild(b);fetch('${apiUrl}').then(r=>r.json()).then(m=>{var u=m[location.href.match(/\\d{10,}/)];if(u)location.replace(u);else b.remove();}).catch(()=>b.remove())})()<\/script>`;
-            
             document.getElementById('installScript').innerText = payload;
         }
 
         function addRedirect() {
             const id = document.getElementById('newId').value.trim();
             const url = document.getElementById('newUrl').value.trim();
-            
-            if (!id || !url) return alert('Please fill both fields');
-            if (!url.startsWith('http')) return alert('URL must start with http:// or https://');
-            
+            if (!id || !url) return alert('Fill both fields');
             mappings[id] = url;
             document.getElementById('newId').value = '';
             document.getElementById('newUrl').value = '';
-            saveData();
+            saveLocal();
         }
 
         function deleteRedirect(id) {
-            if (confirm('Delete this redirect?')) {
-                delete mappings[id];
-                saveData();
+            delete mappings[id];
+            saveLocal();
+        }
+
+        function clearData() {
+            if (confirm('Clear all data?')) {
+                mappings = {};
+                saveLocal();
             }
+        }
+
+        // --- IMPORT / EXPORT ---
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                if (file.name.endsWith('.json')) {
+                    try {
+                        const data = JSON.parse(content);
+                        mappings = {...mappings, ...data};
+                        saveLocal();
+                    } catch (err) { alert('Invalid JSON file'); }
+                } else if (file.name.endsWith('.csv')) {
+                    const lines = content.split('\n');
+                    lines.forEach(line => {
+                        const [id, url] = line.split(',').map(s => s.trim());
+                        if (id && url) mappings[id] = url;
+                    });
+                    saveLocal();
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function downloadJSON() {
+            const blob = new Blob([JSON.stringify(mappings, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'data.json';
+            a.click();
+        }
+
+        function downloadCSV() {
+            let csv = '';
+            for (let id in mappings) {
+                csv += `${id},${mappings[id]}\n`;
+            }
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'redirects.csv';
+            a.click();
         }
 
         function copyScript() {
@@ -364,8 +419,7 @@
             setTimeout(() => btn.innerText = 'Copy', 2000);
         }
 
-        // Initialize
-        loadData();
+        init();
     </script>
 </body>
 </html>
