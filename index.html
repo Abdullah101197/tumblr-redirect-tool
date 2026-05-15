@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Min-Redir Pro Dashboard (Static)</title>
+    <title>Min-Redir Pro | Multi-Group SaaS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg: #0b0f19;
-            --card-bg: #111827;
-            --border: #1f2937;
-            --text: #f3f4f6;
-            --text-dim: #9ca3af;
-            --accent: #818cf8;
-            --danger: #ef4444;
+            --primary-light: #818cf8;
+            --bg: #06080f;
+            --sidebar-bg: #0f172a;
+            --card-bg: #1e293b;
+            --border: #334155;
+            --text: #f1f5f9;
+            --text-dim: #94a3b8;
             --success: #10b981;
+            --danger: #ef4444;
         }
 
         * { box-sizing: border-box; }
@@ -27,88 +27,137 @@
             color: var(--text);
             font-family: 'Outfit', sans-serif;
             margin: 0;
-            padding: 40px 20px;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        aside {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+            padding: 24px;
         }
 
-        .container {
-            width: 100%;
-            max-width: 850px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            margin: 0;
-            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #fff, var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .group-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
             font-weight: 700;
         }
 
-        header p {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            margin-top: 8px;
+        .group-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
+
+        .group-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .group-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+
+        .group-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-new-group {
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-light);
+            border: 1px dashed var(--primary);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .btn-new-group:hover { background: var(--primary); color: white; border-style: solid; }
+
+        /* MAIN CONTENT */
+        main {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-main h2 { margin: 0; font-size: 1.8rem; }
+        .header-main p { color: var(--text-dim); margin: 5px 0 0; font-size: 0.9rem; }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 24px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
 
         .section-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent);
-            margin-bottom: 16px;
+            color: var(--primary-light);
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .section-title span {
-            width: 20px;
-            height: 1px;
-            background: var(--accent);
-            opacity: 0.3;
+            gap: 10px;
         }
 
         .script-box {
             background: #000;
-            border-radius: 12px;
             padding: 16px;
+            border-radius: 12px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
             color: var(--success);
             word-break: break-all;
-            border: 1px solid #222;
             position: relative;
-            margin-top: 12px;
+            border: 1px solid #334155;
         }
 
         .copy-btn {
@@ -121,78 +170,44 @@
             padding: 6px 12px;
             border-radius: 6px;
             font-size: 0.7rem;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
         }
-
-        .copy-btn:hover { background: var(--primary-hover); }
 
         .toolbar {
             display: flex;
             gap: 12px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
         }
 
-        .btn-tool {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 8px 16px;
+        .btn-action {
+            padding: 10px 18px;
             border-radius: 8px;
-            font-size: 0.8rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-size: 0.85rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             transition: all 0.2s;
         }
 
-        .btn-tool:hover { background: var(--border); border-color: var(--text-dim); }
-        .btn-tool.primary { background: var(--primary); border: none; color: white; }
-        .btn-tool.primary:hover { background: var(--primary-hover); }
+        .btn-action:hover { background: var(--border); }
+        .btn-action.primary { background: var(--primary); border: none; }
 
         table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        th {
-            text-align: left;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            padding: 12px 8px;
-            border-bottom: 1px solid var(--border);
-            text-transform: uppercase;
-        }
+        th { text-align: left; padding: 12px; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        td { padding: 14px 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
 
-        td {
-            padding: 14px 8px;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        .id-cell { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
-        .url-cell { color: var(--text-dim); font-size: 0.85rem; }
-
-        .btn-delete {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75rem;
-        }
-
-        .btn-delete:hover { background: var(--danger); color: white; }
-
-        .form-grid {
+        .form-add {
             display: grid;
-            grid-template-columns: 1fr 1.5fr auto;
+            grid-template-columns: 1fr 1fr auto;
             gap: 12px;
-            align-items: end;
         }
 
         input {
@@ -200,217 +215,281 @@
             background: #000;
             border: 1px solid var(--border);
             color: white;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 14px;
+            border-radius: 10px;
             outline: none;
         }
 
-        input:focus { border-color: var(--primary); }
-
-        .btn-add {
+        .btn-add-map {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 0 24px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
         }
 
-        .empty-state { text-align: center; padding: 40px; color: var(--text-dim); font-style: italic; }
-        
-        #fileInput { display: none; }
+        .btn-delete { color: var(--danger); cursor: pointer; background: transparent; border: none; font-size: 0.8rem; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .card { animation: fadeIn 0.4s ease forwards; }
+        /* MODAL */
+        #modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            width: 400px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-content h3 { margin-top: 0; }
+
+        .btn-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn-cancel { background: transparent; color: var(--text-dim); border: none; cursor: pointer; }
+        .btn-save { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Min-Redir Pro</h1>
-            <p>Advanced Tumblr Redirect Manager (JS Edition)</p>
-        </header>
+    <aside>
+        <div class="logo">🚀 RedirPro</div>
+        <div class="group-label">Script Groups</div>
+        <div class="group-list" id="groupList">
+            <!-- Groups injected here -->
+        </div>
+        <div class="btn-new-group" onclick="showModal()">+ New Script Group</div>
+    </aside>
 
-        <!-- SECTION 1: INSTALLATION -->
+    <main id="mainPanel" style="display: none;">
+        <div class="header-main">
+            <div>
+                <h2 id="currentGroupName">Default Group</h2>
+                <p id="groupSubtext">Manage redirects for this script group</p>
+            </div>
+            <button class="btn-action" style="color: var(--danger);" onclick="deleteGroup()">
+                <span>🗑</span> Delete Group
+            </button>
+        </div>
+
+        <!-- INSTALLATION -->
         <div class="card">
-            <div class="section-title"><span></span>Installation Script (Copy Once)</div>
-            <p style="font-size: 0.85rem; color: var(--text-dim); margin: 0 0 16px;">
-                Paste this into Tumblr's <code>&lt;head&gt;</code>. 
-                <strong>Important:</strong> You must host the <code>data.json</code> file in the same folder as this dashboard.
-            </p>
+            <div class="section-title"><span></span>Master Script (Paste in Tumblr)</div>
+            <p style="font-size: 0.85rem; color: var(--text-dim); margin: -10px 0 15px;">Paste this once in your Tumblr theme. It will fetch redirects from <code id="filenameLabel">data.json</code>.</p>
             <div class="script-box">
                 <button class="copy-btn" onclick="copyScript()">Copy</button>
                 <code id="installScript"></code>
             </div>
         </div>
 
-        <!-- SECTION 2: REDIRECT PANEL -->
+        <!-- MANAGEMENT -->
         <div class="card">
-            <div class="section-title"><span></span>Redirect Management Panel</div>
-            
+            <div class="section-title"><span></span>Redirect Panel</div>
             <div class="toolbar">
-                <button class="btn-tool primary" onclick="document.getElementById('fileInput').click()">
-                    <span>⬆</span> Upload JSON/CSV
+                <button class="btn-action primary" onclick="document.getElementById('fileInput').click()">
+                    <span>⬆</span> Upload CSV/JSON
                 </button>
-                <button class="btn-tool" onclick="downloadJSON()">
-                    <span>⬇</span> Download data.json
+                <button class="btn-action" onclick="downloadData()">
+                    <span>⬇</span> Download JSON
                 </button>
-                <button class="btn-tool" onclick="downloadCSV()">
-                    <span>📄</span> Export to CSV
-                </button>
-                <button class="btn-tool" onclick="clearData()" style="color: var(--danger);">
-                    <span>✖</span> Clear All
-                </button>
-                <input type="file" id="fileInput" accept=".json,.csv" onchange="handleFileUpload(event)">
+                <input type="file" id="fileInput" style="display:none" onchange="handleFile(event)">
             </div>
-
-            <div id="panelContent">
+            <div style="max-height: 400px; overflow-y: auto;">
                 <table>
                     <thead>
                         <tr>
-                            <th>Tumblr Post ID</th>
+                            <th>Post ID</th>
                             <th>Destination URL</th>
                             <th style="width: 50px;"></th>
                         </tr>
                     </thead>
                     <tbody id="redirectList"></tbody>
                 </table>
-                <div id="emptyState" class="empty-state">No redirects found.</div>
+                <div id="emptyState" style="text-align: center; padding: 40px; color: var(--text-dim); display: none;">No redirects in this group.</div>
             </div>
         </div>
 
-        <!-- SECTION 3: ADD NEW -->
+        <!-- ADD NEW -->
         <div class="card">
-            <div class="section-title"><span></span>Add New Redirect</div>
-            <div class="form-grid">
-                <div class="input-group">
-                    <input type="text" id="newId" placeholder="Post ID">
-                </div>
-                <div class="input-group">
-                    <input type="text" id="newUrl" placeholder="Destination URL">
-                </div>
-                <button class="btn-add" onclick="addRedirect()">Add Mapping</button>
+            <div class="section-title"><span></span>Add Mapping</div>
+            <div class="form-add">
+                <input type="text" id="newId" placeholder="Tumblr Post ID">
+                <input type="text" id="newUrl" placeholder="https://destination-url.com">
+                <button class="btn-add-map" onclick="addMap()">Add</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- NEW GROUP MODAL -->
+    <div id="modal">
+        <div class="modal-content">
+            <h3>Create New Script Group</h3>
+            <p style="font-size: 0.8rem; color: var(--text-dim);">Example: "Movies", "Anime", "News"</p>
+            <input type="text" id="groupNameInput" placeholder="Enter Group Name...">
+            <div class="btn-row">
+                <button class="btn-cancel" onclick="hideModal()">Cancel</button>
+                <button class="btn-save" onclick="createGroup()">Create Group</button>
             </div>
         </div>
     </div>
 
     <script>
-        let mappings = {};
+        let appData = {
+            groups: {
+                "Default": { redirects: {}, filename: "data.json" }
+            },
+            current: "Default"
+        };
 
-        // Load from LocalStorage on start
         function init() {
-            const saved = localStorage.getItem('tm_mappings');
-            if (saved) mappings = JSON.parse(saved);
-            renderTable();
-            updateScript();
+            const saved = localStorage.getItem('redirpro_v2');
+            if (saved) appData = JSON.parse(saved);
+            renderGroups();
+            switchGroup(appData.current);
         }
 
-        function saveLocal() {
-            localStorage.setItem('tm_mappings', JSON.stringify(mappings));
+        function save() {
+            localStorage.setItem('redirpro_v2', JSON.stringify(appData));
+        }
+
+        function renderGroups() {
+            const list = document.getElementById('groupList');
+            list.innerHTML = '';
+            Object.keys(appData.groups).forEach(name => {
+                const div = document.createElement('div');
+                div.className = `group-item ${name === appData.current ? 'active' : ''}`;
+                div.innerHTML = `<span>📂 ${name}</span>`;
+                div.onclick = () => switchGroup(name);
+                list.appendChild(div);
+            });
+        }
+
+        function switchGroup(name) {
+            appData.current = name;
+            document.getElementById('mainPanel').style.display = 'flex';
+            document.getElementById('currentGroupName').innerText = name + ' Group';
+            document.getElementById('filenameLabel').innerText = appData.groups[name].filename;
+            
+            renderGroups();
             renderTable();
+            updateScript();
+            save();
         }
 
         function renderTable() {
             const list = document.getElementById('redirectList');
             const empty = document.getElementById('emptyState');
-            list.innerHTML = '';
+            const maps = appData.groups[appData.current].redirects;
+            const keys = Object.keys(maps);
             
-            const keys = Object.keys(mappings);
+            list.innerHTML = '';
             if (keys.length === 0) {
                 empty.style.display = 'block';
             } else {
                 empty.style.display = 'none';
                 keys.forEach(id => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="id-cell">${id}</td>
-                        <td class="url-cell">${mappings[id]}</td>
-                        <td><button class="btn-delete" onclick="deleteRedirect('${id}')">Delete</button></td>
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-family: monospace; color: var(--primary-light)">${id}</td>
+                        <td style="color: var(--text-dim); font-size: 0.8rem;">${maps[id]}</td>
+                        <td style="text-align: right;"><button class="btn-delete" onclick="deleteMap('${id}')">Delete</button></td>
                     `;
-                    list.appendChild(row);
+                    list.appendChild(tr);
                 });
             }
         }
 
         function updateScript() {
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-            const apiUrl = baseUrl + 'data.json';
-            const payload = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:999999;display:flex;align-items:center;justify-content:center;';b.innerText='Loading...';d.documentElement.appendChild(b);fetch('${apiUrl}').then(r=>r.json()).then(m=>{var u=m[location.href.match(/\\d{10,}/)];if(u)location.replace(u);else b.remove();}).catch(()=>b.remove())})()<\/script>`;
+            const group = appData.groups[appData.current];
+            const dataUrl = baseUrl + group.filename;
+            
+            const payload = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;';b.innerText='Loading...';d.documentElement.appendChild(b);fetch('${dataUrl}').then(r=>r.json()).then(m=>{var u=m[location.href.match(/\\d{10,}/)];if(u)location.replace(u);else b.remove();}).catch(()=>b.remove())})()<\/script>`;
             document.getElementById('installScript').innerText = payload;
         }
 
-        function addRedirect() {
+        function addMap() {
             const id = document.getElementById('newId').value.trim();
             const url = document.getElementById('newUrl').value.trim();
             if (!id || !url) return alert('Fill both fields');
-            mappings[id] = url;
+            
+            appData.groups[appData.current].redirects[id] = url;
             document.getElementById('newId').value = '';
             document.getElementById('newUrl').value = '';
-            saveLocal();
+            renderTable();
+            save();
         }
 
-        function deleteRedirect(id) {
-            delete mappings[id];
-            saveLocal();
+        function deleteMap(id) {
+            delete appData.groups[appData.current].redirects[id];
+            renderTable();
+            save();
         }
 
-        function clearData() {
-            if (confirm('Clear all data?')) {
-                mappings = {};
-                saveLocal();
+        function createGroup() {
+            const name = document.getElementById('groupNameInput').value.trim();
+            if (!name) return alert('Enter a name');
+            if (appData.groups[name]) return alert('Group exists');
+            
+            const filename = name.toLowerCase().replace(/\s+/g, '-') + '.json';
+            appData.groups[name] = { redirects: {}, filename: filename };
+            hideModal();
+            switchGroup(name);
+        }
+
+        function deleteGroup() {
+            if (appData.current === 'Default') return alert('Cannot delete Default group');
+            if (confirm(`Delete group "${appData.current}"?`)) {
+                delete appData.groups[appData.current];
+                switchGroup('Default');
             }
         }
 
-        // --- IMPORT / EXPORT ---
+        function downloadData() {
+            const group = appData.groups[appData.current];
+            const blob = new Blob([JSON.stringify(group.redirects, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = group.filename;
+            a.click();
+        }
 
-        function handleFileUpload(event) {
+        function handleFile(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = (e) => {
                 const content = e.target.result;
-                if (file.name.endsWith('.json')) {
-                    try {
+                try {
+                    if (file.name.endsWith('.json')) {
                         const data = JSON.parse(content);
-                        mappings = {...mappings, ...data};
-                        saveLocal();
-                    } catch (err) { alert('Invalid JSON file'); }
-                } else if (file.name.endsWith('.csv')) {
-                    const lines = content.split('\n');
-                    lines.forEach(line => {
-                        const [id, url] = line.split(',').map(s => s.trim());
-                        if (id && url) mappings[id] = url;
-                    });
-                    saveLocal();
-                }
+                        appData.groups[appData.current].redirects = {...appData.groups[appData.current].redirects, ...data};
+                    } else if (file.name.endsWith('.csv')) {
+                        content.split('\n').forEach(line => {
+                            const [id, url] = line.split(',').map(s => s.trim());
+                            if (id && url) appData.groups[appData.current].redirects[id] = url;
+                        });
+                    }
+                    renderTable();
+                    save();
+                } catch (err) { alert('Error parsing file'); }
             };
             reader.readAsText(file);
         }
 
-        function downloadJSON() {
-            const blob = new Blob([JSON.stringify(mappings, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'data.json';
-            a.click();
-        }
-
-        function downloadCSV() {
-            let csv = '';
-            for (let id in mappings) {
-                csv += `${id},${mappings[id]}\n`;
-            }
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'redirects.csv';
-            a.click();
-        }
-
+        function showModal() { document.getElementById('modal').style.display = 'flex'; }
+        function hideModal() { document.getElementById('modal').style.display = 'none'; }
+        
         function copyScript() {
             const text = document.getElementById('installScript').innerText;
             navigator.clipboard.writeText(text);
