@@ -237,10 +237,40 @@
         }
 
         async function save() {
-            await _sb.from('redir_pro').upsert({ user_id: _user.id, config_data: _config });
+            if (!_user) return;
+            const { error } = await _sb.from('redir_pro').upsert({ user_id: _user.id, config_data: _config }, { onConflict: 'user_id' });
+            if (error) showToast("Save failed: " + error.message);
         }
 
-        function toggleMode() { _mode = _mode === 'login' ? 'signup' : 'login'; handleAuth(); }
+        async function createGroup() {
+            const name = prompt("Enter Group Name:");
+            if (!name || _config.groups[name]) return showToast("Invalid or duplicate name!");
+            _config.groups[name] = { redirects: {} };
+            _config.current = name;
+            await save();
+            render();
+            showToast("Group created!");
+        }
+
+        async function delMap(id) {
+            if (!confirm("Delete this redirect?")) return;
+            delete _config.groups[_config.current].redirects[id];
+            await save();
+            render();
+            showToast("Deleted!");
+        }
+
+        function copyScript() {
+            const text = document.getElementById('scriptBox').innerText;
+            navigator.clipboard.writeText(text);
+            showToast("Script copied!");
+        }
+
+        function toggleMode() { 
+            _mode = _mode === 'login' ? 'signup' : 'login'; 
+            document.querySelector('h2').innerText = _mode === 'login' ? 'Welcome' : 'Join Us';
+            document.querySelector('.btn-primary').innerText = _mode === 'login' ? 'Login' : 'Sign Up';
+        }
         async function logout() { await _sb.auth.signOut(); location.reload(); }
         init();
     </script>
