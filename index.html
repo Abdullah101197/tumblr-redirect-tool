@@ -75,6 +75,9 @@
         .btn-primary { background: var(--primary); color: white; width: 100%; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
 
+        .btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-size: 0.75rem; border-radius: 6px; border: none; cursor: pointer; }
+        .btn-danger:hover { opacity: 0.8; transform: scale(1.05); }
+
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { text-align: left; padding: 15px; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); }
         td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
@@ -117,13 +120,13 @@
         <div class="stats-grid">
             <div class="stat-card"><div><span class="stat-val" id="statClicks">0</span><span class="stat-label">Clicks</span></div></div>
             <div class="stat-card"><div><span class="stat-val" id="statRedirects">0</span><span class="stat-label">Redirects</span></div></div>
-            <div class="stat-card"><div><span class="stat-val">Live</span><span class="stat-label">Status</span></div></div>
+            <div class="stat-card"><div><span class="stat-val" style="color:var(--success)">Live</span><span class="stat-label">Status</span></div></div>
         </div>
 
         <div class="card">
             <h3>Master Script</h3>
             <div class="script-box" id="scriptBox">// Loading...</div>
-            <button class="btn btn-outline" style="margin-top:10px" onclick="copyScript()">Copy</button>
+            <button class="btn btn-outline" style="margin-top:10px" onclick="copyScript()">Copy Script</button>
         </div>
 
         <div class="card">
@@ -134,7 +137,7 @@
                 <button class="btn btn-primary" onclick="addMap()" style="width:auto">Add</button>
             </div>
             <table>
-                <thead><tr><th>Post ID</th><th>Target</th><th>Action</th></tr></thead>
+                <thead><tr><th>Post ID</th><th>Target</th><th style="text-align:right">Action</th></tr></thead>
                 <tbody id="mapList"></tbody>
             </table>
         </div>
@@ -173,7 +176,7 @@
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('sidebar').style.display = 'flex';
             document.getElementById('mainContent').style.display = 'block';
-            document.getElementById('userName').innerText = u.email;
+            document.getElementById('userName').innerText = u.email.split('@')[0];
             document.getElementById('avatar').innerText = u.email[0].toUpperCase();
             
             const { data } = await _sb.from('redir_pro').select('config_data').eq('user_id', u.id).single();
@@ -188,7 +191,7 @@
             Object.keys(_config.groups).forEach(g => {
                 const div = document.createElement('div');
                 div.className = `group-item ${g === _config.current ? 'active' : ''}`;
-                div.innerHTML = `<i data-lucide="folder"></i> ${g}`;
+                div.innerHTML = `<i data-lucide="folder" size="16"></i> ${g}`;
                 div.onclick = () => { _config.current = g; render(); };
                 list.appendChild(div);
             });
@@ -199,7 +202,7 @@
             let total = 0;
             Object.keys(group.redirects).forEach(id => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${id}</td><td>${group.redirects[id]}</td><td><button onclick="delMap('${id}')">Del</button></td>`;
+                tr.innerHTML = `<td style="font-family:monospace; color:var(--primary)">${id}</td><td>${group.redirects[id]}</td><td style="text-align:right"><button class="btn-danger" onclick="delMap('${id}')">Del</button></td>`;
                 mList.appendChild(tr);
                 total++;
             });
