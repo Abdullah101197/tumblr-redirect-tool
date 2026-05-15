@@ -131,6 +131,13 @@
         </div>
 
         <div class="card">
+            <h3>Recent Traffic</h3>
+            <div id="recentTraffic" style="font-size: 0.85rem; color: var(--text-dim);">
+                No clicks tracked yet.
+            </div>
+        </div>
+
+        <div class="card">
             <h3>Mappings</h3>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <input type="text" id="newId" placeholder="Post ID" style="margin:0">
@@ -184,6 +191,23 @@
             if (data) _config = { ..._config, ...data.config_data };
             
             render();
+            fetchStats();
+            setInterval(fetchStats, 10000); // Auto refresh every 10s
+        }
+
+        async function fetchStats() {
+            if (!_sb || !_user) return;
+            const { count } = await _sb.from('clicks').select('*', { count: 'exact', head: true }).eq('user_id', _user.id);
+            document.getElementById('statClicks').innerText = count || 0;
+
+            const { data } = await _sb.from('clicks').select('*').eq('user_id', _user.id).order('created_at', { ascending: false }).limit(5);
+            if (data && data.length > 0) {
+                const html = data.map(c => `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border);">
+                    <span>🎯 Post: ${c.post_id}</span>
+                    <span style="color:var(--primary)">${new Date(c.created_at).toLocaleTimeString()}</span>
+                </div>`).join('');
+                document.getElementById('recentTraffic').innerHTML = html;
+            }
         }
 
         function render() {
