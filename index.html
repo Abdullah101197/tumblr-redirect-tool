@@ -488,10 +488,20 @@
         }
 
         async function init() {
-            _0xInitS();
-            const { data: { session: _0xS } } = await _0x1b3c.auth.getSession();
-            if (_0xS) { _0xOnL(_0xS.user); } else { document.getElementById('authOverlay').style.display = 'flex'; }
-            lucide.createIcons();
+            try {
+                _0xInitS();
+                const { data: { session: _0xS } } = await _0x1b3c.auth.getSession();
+                if (_0xS) { 
+                    _0xOnL(_0xS.user); 
+                } else { 
+                    document.getElementById('authOverlay').style.display = 'flex';
+                    document.getElementById('mainPanel').style.display = 'none';
+                }
+                lucide.createIcons();
+            } catch (e) {
+                console.error("Init failed:", e);
+                document.getElementById('authOverlay').style.display = 'flex';
+            }
         }
 
         function _0xInitS() {
@@ -504,11 +514,14 @@
             _0x5f2d = _0xU;
             _0xAdmin = _0xU.email === _0xAuthID;
             document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('mainPanel').style.display = 'flex';
             document.getElementById('userName').innerText = _0xU.email.split('@')[0];
             document.getElementById('userAvatar').innerText = _0xU.email[0].toUpperCase();
             if (_0xAdmin) {
-                document.getElementById('adminBtn').style.display = 'flex';
-                document.getElementById('adminBadge').style.display = 'inline-block';
+                const b = document.getElementById('adminBtn');
+                const badge = document.getElementById('adminBadge');
+                if(b) b.style.display = 'flex';
+                if(badge) badge.style.display = 'inline-block';
             }
             const _0xSv = localStorage.getItem('redirpro_v3');
             if (_0xSv) _0x4a2e = JSON.parse(_0xSv);
