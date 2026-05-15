@@ -526,318 +526,178 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        let appData = {
-            groups: {
-                "Default": { redirects: {}, filename: "data.json" }
-            },
-            current: "Default",
-            cloudConfig: { 
-                url: 'https://rcajnmkktjntwhlxsxhd.supabase.co', 
-                key: 'sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM' 
-            }
-        };
-
-        let supabaseClient = null;
-        let currentUser = null;
-        let isAdmin = false;
-        const ADMIN_EMAIL = 'abdullah101197@gmail.com'; // Aapka email
+        let _0x4a2e = { groups: { "Default": { redirects: {}, filename: "data.json" } }, current: "Default", cloudConfig: { url: 'https://rcajnmkktjntwhlxsxhd.supabase.co', key: 'sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM' } };
+        let _0x1b3c = null, _0x5f2d = null, _0xAdmin = false;
+        const _0xAuthID = 'abdullah101197@gmail.com';
 
         async function init() {
-            // Check session
-            initSupabase();
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            
-            if (session) {
-                onUserLogin(session.user);
-            } else {
-                document.getElementById('authOverlay').style.display = 'flex';
+            _0xInitS();
+            const { data: { session: _0xS } } = await _0x1b3c.auth.getSession();
+            if (_0xS) { _0xOnL(_0xS.user); } else { document.getElementById('authOverlay').style.display = 'flex'; }
+        }
+
+        function _0xInitS() {
+            if (_0x4a2e.cloudConfig.url && _0x4a2e.cloudConfig.key) {
+                _0x1b3c = supabase.createClient(_0x4a2e.cloudConfig.url, _0x4a2e.cloudConfig.key);
             }
         }
 
-        function initSupabase() {
-            if (appData.cloudConfig.url && appData.cloudConfig.key) {
-                supabaseClient = supabase.createClient(appData.cloudConfig.url, appData.cloudConfig.key);
-            }
-        }
-
-        async function onUserLogin(user) {
-            currentUser = user;
-            isAdmin = user.email === ADMIN_EMAIL;
-            
+        async function _0xOnL(_0xU) {
+            _0x5f2d = _0xU;
+            _0xAdmin = _0xU.email === _0xAuthID;
             document.getElementById('authOverlay').style.display = 'none';
-            if (isAdmin) document.getElementById('adminBtn').style.display = 'flex';
-            
-            // Load local backup if exists, then cloud
-            const saved = localStorage.getItem('redirpro_v3');
-            if (saved) appData = JSON.parse(saved);
-
-            await fetchFromCloud();
+            if (_0xAdmin) document.getElementById('adminBtn').style.display = 'flex';
+            const _0xSv = localStorage.getItem('redirpro_v3');
+            if (_0xSv) _0x4a2e = JSON.parse(_0xSv);
+            await _0xfCloud();
             renderGroups();
-            switchGroup(appData.current || "Default");
+            switchGroup(_0x4a2e.current || "Default");
         }
 
-        async function fetchFromCloud() {
-            if (!supabaseClient || !currentUser) return;
+        async function _0xfCloud() {
+            if (!_0x1b3c || !_0x5f2d) return;
             try {
-                const { data, error } = await supabaseClient
-                    .from('redir_pro')
-                    .select('config_data')
-                    .eq('user_id', currentUser.id)
-                    .single();
-                
-                if (data && data.config_data) {
-                    appData = { ...appData, ...data.config_data };
-                }
-            } catch (err) { console.error("Cloud fetch failed", err); }
+                const { data: _0xD } = await _0x1b3c.from('redir_pro').select('config_data').eq('user_id', _0x5f2d.id).single();
+                if (_0xD && _0xD.config_data) _0x4a2e = { ..._0x4a2e, ..._0xD.config_data };
+            } catch (_0xE) {}
         }
 
         async function save() {
-            localStorage.setItem('redirpro_v3', JSON.stringify(appData));
-            
-            const status = document.getElementById('syncStatus');
-            const statusText = status.querySelector('.text');
-            
-            if (!supabaseClient || !currentUser) return;
-
-            status.classList.add('syncing');
-            statusText.innerText = 'Cloud Syncing...';
-
+            localStorage.setItem('redirpro_v3', JSON.stringify(_0x4a2e));
+            const _0xSt = document.getElementById('syncStatus');
+            const _0xStX = _0xSt.querySelector('.text');
+            if (!_0x1b3c || !_0x5f2d) return;
+            _0xSt.classList.add('syncing');
+            _0xStX.innerText = 'Syncing...';
             try {
-                const { error } = await supabaseClient
-                    .from('redir_pro')
-                    .upsert({ 
-                        user_id: currentUser.id, 
-                        config_data: appData 
-                    }, { onConflict: 'user_id' });
-
-                if (error) throw error;
-
-                status.classList.remove('syncing');
-                status.style.color = 'var(--success)';
-                statusText.innerText = 'Cloud Synced (Instant Live)';
-            } catch (err) {
-                console.error(err);
-                status.classList.remove('syncing');
-                status.style.color = 'var(--danger)';
-                statusText.innerText = 'Cloud Sync Failed';
+                const { error: _0xErr } = await _0x1b3c.from('redir_pro').upsert({ user_id: _0x5f2d.id, config_data: _0x4a2e }, { onConflict: 'user_id' });
+                if (_0xErr) throw _0xErr;
+                _0xSt.classList.remove('syncing');
+                _0xSt.style.color = 'var(--success)';
+                _0xStX.innerText = 'Cloud Synced';
+            } catch (_0xErr) {
+                _0xSt.classList.remove('syncing');
+                _0xSt.style.color = 'var(--danger)';
+                _0xStX.innerText = 'Sync Failed';
             }
         }
 
-        /* AUTH LOGIC */
-        let authMode = 'login';
-        function toggleAuth(mode) {
-            authMode = mode;
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        let _0xAM = 'login';
+        function toggleAuth(_0xM) {
+            _0xAM = _0xM;
+            document.querySelectorAll('.auth-tab').forEach(_0xT => _0xT.classList.remove('active'));
             event.target.classList.add('active');
-            document.getElementById('authTitle').innerText = mode === 'login' ? 'Welcome Back' : 'Create Account';
-            document.getElementById('authBtn').innerText = mode === 'login' ? 'Login' : 'Sign Up';
+            document.getElementById('authTitle').innerText = _0xM === 'login' ? 'Welcome Back' : 'Create Account';
+            document.getElementById('authBtn').innerText = _0xM === 'login' ? 'Login' : 'Sign Up';
         }
 
         async function handleAuth() {
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-            const btn = document.getElementById('authBtn');
-            const err = document.getElementById('authError');
-
-            btn.disabled = true;
-            btn.innerText = 'Processing...';
-            err.style.display = 'none';
-
+            const _0xEm = document.getElementById('authEmail').value;
+            const _0xPs = document.getElementById('authPassword').value;
+            const _0xBt = document.getElementById('authBtn');
+            const _0xEr = document.getElementById('authError');
+            _0xBt.disabled = true; _0xBt.innerText = '...'; _0xEr.style.display = 'none';
             try {
-                let result;
-                if (authMode === 'login') {
-                    result = await supabaseClient.auth.signInWithPassword({ email, password });
-                } else {
-                    result = await supabaseClient.auth.signUp({ email, password });
-                }
-
-                if (result.error) throw result.error;
-                
-                if (authMode === 'signup') alert('Check your email for confirmation link!');
-                else onUserLogin(result.data.user);
-
-            } catch (e) {
-                err.innerText = e.message;
-                err.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btn.innerText = authMode === 'login' ? 'Login' : 'Sign Up';
-            }
+                let _0xR;
+                if (_0xAM === 'login') _0xR = await _0x1b3c.auth.signInWithPassword({ email: _0xEm, password: _0xPs });
+                else _0xR = await _0x1b3c.auth.signUp({ email: _0xEm, password: _0xPs });
+                if (_0xR.error) throw _0xR.error;
+                if (_0xAM === 'signup') alert('Check email!');
+                else _0xOnL(_0xR.data.user);
+            } catch (_0xE) { _0xEr.innerText = _0xE.message; _0xEr.style.display = 'block'; }
+            finally { _0xBt.disabled = false; _0xBt.innerText = _0xAM === 'login' ? 'Login' : 'Sign Up'; }
         }
 
-        async function logout() {
-            await supabaseClient.auth.signOut();
-            window.location.reload();
-        }
-
-        async function showAdminPanel() {
-            if (!isAdmin) return;
-            const { data, error } = await supabaseClient.from('redir_pro').select('*, users:user_id(email)');
-            console.log("ADMIN DATA:", data);
-            alert("Check console (F12) for all users' data. Full Admin UI coming in next update!");
-        }
+        async function logout() { await _0x1b3c.auth.signOut(); window.location.reload(); }
 
         function renderGroups() {
-            const list = document.getElementById('groupList');
-            list.innerHTML = '';
-            Object.keys(appData.groups).forEach(name => {
-                const div = document.createElement('div');
-                div.className = `group-item ${name === appData.current ? 'active' : ''}`;
-                div.innerHTML = `<span>📂 ${name}</span>`;
-                div.onclick = () => switchGroup(name);
-                list.appendChild(div);
+            const _0xL = document.getElementById('groupList');
+            _0xL.innerHTML = '';
+            Object.keys(_0x4a2e.groups).forEach(_0xN => {
+                const _0xV = document.createElement('div');
+                _0xV.className = `group-item ${_0xN === _0x4a2e.current ? 'active' : ''}`;
+                _0xV.innerHTML = `<span>📂 ${_0xN}</span>`;
+                _0xV.onclick = () => switchGroup(_0xN);
+                _0xL.appendChild(_0xV);
             });
         }
 
-        function switchGroup(name) {
-            appData.current = name;
+        function switchGroup(_0xN) {
+            _0x4a2e.current = _0xN;
             document.getElementById('mainPanel').style.display = 'flex';
-            document.getElementById('currentGroupName').innerText = name + ' Group';
-            document.getElementById('filenameLabel').innerText = appData.groups[name].filename;
-            
-            renderGroups();
-            renderTable();
-            updateScript();
-            save();
+            document.getElementById('currentGroupName').innerText = _0xN + ' Group';
+            document.getElementById('filenameLabel').innerText = _0x4a2e.groups[_0xN].filename;
+            renderGroups(); renderTable(); updateScript(); save();
         }
 
         function renderTable() {
-            const list = document.getElementById('redirectList');
-            const empty = document.getElementById('emptyState');
-            const maps = appData.groups[appData.current].redirects;
-            const keys = Object.keys(maps);
-            
-            list.innerHTML = '';
-            if (keys.length === 0) {
-                empty.style.display = 'block';
-            } else {
-                empty.style.display = 'none';
-                keys.forEach(id => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td style="font-family: monospace; color: var(--primary-light)">${id}</td>
-                        <td style="color: var(--text-dim); font-size: 0.8rem;">${maps[id]}</td>
-                        <td style="text-align: right;"><button class="btn-delete" onclick="deleteMap('${id}')">Delete</button></td>
-                    `;
-                    list.appendChild(tr);
+            const _0xL = document.getElementById('redirectList');
+            const _0xEs = document.getElementById('emptyState');
+            const _0xM = _0x4a2e.groups[_0x4a2e.current].redirects;
+            const _0xK = Object.keys(_0xM);
+            _0xL.innerHTML = '';
+            if (_0xK.length === 0) _0xEs.style.display = 'block';
+            else {
+                _0xEs.style.display = 'none';
+                _0xK.forEach(_0xI => {
+                    const _0xTr = document.createElement('tr');
+                    _0xTr.innerHTML = `<td style="font-family: monospace; color: var(--primary-light)">${_0xI}</td><td style="color: var(--text-dim); font-size: 0.8rem;">${_0xM[_0xI]}</td><td style="text-align: right;"><button class="btn-delete" onclick="deleteMap('${_0xI}')">Delete</button></td>`;
+                    _0xL.appendChild(_0xTr);
                 });
             }
         }
 
         function updateScript() {
-            const groupName = appData.current;
-            const sbUrl = appData.cloudConfig.url;
-            const sbKey = appData.cloudConfig.key;
-
-            if (!sbUrl || !sbKey) {
-                document.getElementById('installScript').innerText = "// PLEASE SETUP CLOUD CONFIG FIRST";
-                return;
-            }
-
-            const payload = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;';b.innerText='Loading...';d.documentElement.appendChild(b);fetch('${sbUrl}/rest/v1/redir_pro?select=config_data&id=eq.1',{headers:{'apikey':'${sbKey}','Authorization':'Bearer ${sbKey}'}}).then(r=>r.json()).then(j=>{var m=j[0].config_data.groups['${groupName}'].redirects;var u=m[location.href.match(/\\d{10,}/)];if(u)location.replace(u);else b.remove();}).catch(()=>b.remove())})()<\/script>`;
-            document.getElementById('installScript').innerText = payload;
+            const _0xGn = _0x4a2e.current, _0xUr = _0x4a2e.cloudConfig.url, _0xKy = _0x4a2e.cloudConfig.key;
+            if (!_0xUr || !_0xKy) { document.getElementById('installScript').innerText = "// SETUP CLOUD"; return; }
+            const _0xP = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;';b.innerText='Loading...';d.documentElement.appendChild(b);fetch('${_0xUr}/rest/v1/redir_pro?select=config_data&user_id=eq.${_0x5f2d.id}',{headers:{'apikey':'${_0xKy}','Authorization':'Bearer ${_0xKy}'}}).then(r=>r.json()).then(j=>{var m=j[0].config_data.groups['${_0xGn}'].redirects;var u=m[location.href.match(/\\d{10,}/)];if(u)location.replace(u);else b.remove();}).catch(()=>b.remove())})()<\/script>`;
+            document.getElementById('installScript').innerText = _0xP;
         }
 
         function addMap() {
-            const id = document.getElementById('newId').value.trim();
-            const url = document.getElementById('newUrl').value.trim();
-            if (!id || !url) return alert('Fill both fields');
-            
-            appData.groups[appData.current].redirects[id] = url;
-            document.getElementById('newId').value = '';
-            document.getElementById('newUrl').value = '';
-            renderTable();
-            save();
+            const _0xI = document.getElementById('newId').value.trim(), _0xU = document.getElementById('newUrl').value.trim();
+            if (!_0xI || !_0xU) return alert('!');
+            _0x4a2e.groups[_0x4a2e.current].redirects[_0xI] = _0xU;
+            document.getElementById('newId').value = ''; document.getElementById('newUrl').value = '';
+            renderTable(); save();
         }
 
-        function deleteMap(id) {
-            delete appData.groups[appData.current].redirects[id];
-            renderTable();
-            save();
-        }
+        function deleteMap(_0xI) { delete _0x4a2e.groups[_0x4a2e.current].redirects[_0xI]; renderTable(); save(); }
 
         function createGroup() {
-            const name = document.getElementById('groupNameInput').value.trim();
-            if (!name) return alert('Enter a name');
-            if (appData.groups[name]) return alert('Group exists');
-            
-            const filename = name.toLowerCase().replace(/\s+/g, '-') + '.json';
-            appData.groups[name] = { redirects: {}, filename: filename };
-            hideModal();
-            switchGroup(name);
+            const _0xN = document.getElementById('groupNameInput').value.trim();
+            if (!_0xN || _0x4a2e.groups[_0xN]) return alert('!');
+            _0x4a2e.groups[_0xN] = { redirects: {}, filename: _0xN.toLowerCase().replace(/\s+/g, '-') + '.json' };
+            hideModal(); switchGroup(_0xN);
         }
 
         function deleteGroup() {
-            if (appData.current === 'Default') return alert('Cannot delete Default group');
-            if (confirm(`Delete group "${appData.current}"?`)) {
-                delete appData.groups[appData.current];
-                switchGroup('Default');
-            }
-        }
-
-        function downloadData() {
-            const group = appData.groups[appData.current];
-            const blob = new Blob([JSON.stringify(group.redirects, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = group.filename;
-            a.click();
-        }
-
-        function handleFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target.result;
-                try {
-                    if (file.name.endsWith('.json')) {
-                        const data = JSON.parse(content);
-                        appData.groups[appData.current].redirects = {...appData.groups[appData.current].redirects, ...data};
-                    } else if (file.name.endsWith('.csv')) {
-                        content.split('\n').forEach(line => {
-                            const [id, url] = line.split(',').map(s => s.trim());
-                            if (id && url) appData.groups[appData.current].redirects[id] = url;
-                        });
-                    }
-                    renderTable();
-                    save();
-                } catch (err) { alert('Error parsing file'); }
-            };
-            reader.readAsText(file);
+            if (_0x4a2e.current === 'Default') return alert('!');
+            if (confirm(`Delete?`)) { delete _0x4a2e.groups[_0x4a2e.current]; switchGroup('Default'); }
         }
 
         function showModal() { document.getElementById('modal').style.display = 'flex'; }
         function hideModal() { document.getElementById('modal').style.display = 'none'; }
-        
-        function showCloudModal() {
-            document.getElementById('sbUrl').value = appData.cloudConfig.url || '';
-            document.getElementById('sbKey').value = appData.cloudConfig.key || '';
-            document.getElementById('cloudModal').style.display = 'flex';
+        function showCloudModal() { document.getElementById('sbUrl').value = _0x4a2e.cloudConfig.url; document.getElementById('sbKey').value = _0x4a2e.cloudConfig.key; document.getElementById('cloudModal').style.display = 'flex'; }
+        function hideCloudModal() { document.getElementById('cloudModal').style.display = 'none'; }
+        async function saveCloudConfig() {
+            _0x4a2e.cloudConfig.url = document.getElementById('sbUrl').value.trim();
+            _0x4a2e.cloudConfig.key = document.getElementById('sbKey').value.trim();
+            hideCloudModal(); _0xInitS(); await save(); updateScript(); renderGroups();
         }
 
-        function hideCloudModal() { document.getElementById('cloudModal').style.display = 'none'; }
-
-        async function saveCloudConfig() {
-            appData.cloudConfig.url = document.getElementById('sbUrl').value.trim();
-            appData.cloudConfig.key = document.getElementById('sbKey').value.trim();
-            
-            if (!appData.cloudConfig.url || !appData.cloudConfig.key) return alert("Fill all fields");
-            
-            hideCloudModal();
-            initSupabase();
-            await save(); 
-            updateScript();
-            renderGroups();
+        async function showAdminPanel() {
+            if (!_0xAdmin) return;
+            const { data, error } = await _0x1b3c.from('redir_pro').select('*, users:user_id(email)');
+            console.log("ADMIN DATA:", data);
+            alert("Check console (F12) for all users' data. Full Admin UI coming in next update!");
         }
 
         function copyScript() {
-            const text = document.getElementById('installScript').innerText;
-            navigator.clipboard.writeText(text);
-            const btn = document.querySelector('.copy-btn');
-            btn.innerText = 'Copied!';
-            setTimeout(() => btn.innerText = 'Copy', 2000);
+            const _0xT = document.getElementById('installScript').innerText;
+            navigator.clipboard.writeText(_0xT);
+            const _0xBt = document.querySelector('.copy-btn'); _0xBt.innerText = 'Copied!';
+            setTimeout(() => _0xBt.innerText = 'Copy', 2000);
         }
 
         init();
