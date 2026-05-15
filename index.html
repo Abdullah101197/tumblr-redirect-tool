@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -128,6 +129,24 @@
 
         .header-main h2 { margin: 0; font-size: 1.8rem; }
         .header-main p { color: var(--text-dim); margin: 5px 0 0; font-size: 0.9rem; }
+
+        #syncStatus {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            width: fit-content;
+        }
+
+        #syncStatus.syncing {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-light);
+        }
 
         .card {
             background: var(--card-bg);
@@ -257,6 +276,18 @@
         .btn-cancel { background: transparent; color: var(--text-dim); border: none; cursor: pointer; }
         .btn-save { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
 
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+
     </style>
 </head>
 <body>
@@ -268,6 +299,13 @@
             <!-- Groups injected here -->
         </div>
         <div class="btn-new-group" onclick="showModal()">+ New Script Group</div>
+        
+        <div style="margin-top: auto;">
+            <div class="group-label">System</div>
+            <div class="group-item" onclick="showCloudModal()">
+                <span>☁️ Cloud Settings</span>
+            </div>
+        </div>
     </aside>
 
     <main id="mainPanel" style="display: none;">
@@ -275,6 +313,10 @@
             <div>
                 <h2 id="currentGroupName">Default Group</h2>
                 <p id="groupSubtext">Manage redirects for this script group</p>
+                <div id="syncStatus">
+                    <span class="dot" style="width: 8px; height: 8px; background: currentColor; border-radius: 50%;"></span>
+                    <span class="text">Local Only (Setup Cloud)</span>
+                </div>
             </div>
             <button class="btn-action" style="color: var(--danger);" onclick="deleteGroup()">
                 <span>🗑</span> Delete Group
@@ -329,6 +371,28 @@
         </div>
     </main>
 
+    <!-- CLOUD SETTINGS MODAL -->
+    <div id="cloudModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Cloud Database Setup</h3>
+            <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">Use Supabase for instant live updates across all devices.</p>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 0.7rem; color: var(--primary-light);">SUPABASE URL</label>
+                <input type="text" id="sbUrl" placeholder="https://xyz.supabase.co">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 0.7rem; color: var(--primary-light);">SUPABASE ANON KEY</label>
+                <input type="password" id="sbKey" placeholder="your-anon-key">
+            </div>
+            
+            <div class="btn-row">
+                <button class="btn-cancel" onclick="hideCloudModal()">Cancel</button>
+                <button class="btn-save" onclick="saveCloudConfig()">Connect & Sync</button>
+            </div>
+        </div>
+    </div>
+
     <!-- NEW GROUP MODAL -->
     <div id="modal">
         <div class="modal-content">
@@ -342,23 +406,89 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         let appData = {
             groups: {
                 "Default": { redirects: {}, filename: "data.json" }
             },
-            current: "Default"
+            current: "Default",
+            cloudConfig: { 
+                url: 'https://rcajnmkktjntwhlxsxhd.supabase.co', 
+                key: 'sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM' 
+            }
         };
 
-        function init() {
-            const saved = localStorage.getItem('redirpro_v2');
+        let supabaseClient = null;
+
+        async function init() {
+            // Load local backup first
+            const saved = localStorage.getItem('redirpro_v3');
             if (saved) appData = JSON.parse(saved);
+
+            if (appData.cloudConfig && appData.cloudConfig.url && appData.cloudConfig.key) {
+                initSupabase();
+                await fetchFromCloud();
+            }
+
             renderGroups();
-            switchGroup(appData.current);
+            switchGroup(appData.current || "Default");
         }
 
-        function save() {
-            localStorage.setItem('redirpro_v2', JSON.stringify(appData));
+        function initSupabase() {
+            if (appData.cloudConfig.url && appData.cloudConfig.key) {
+                supabaseClient = supabase.createClient(appData.cloudConfig.url, appData.cloudConfig.key);
+            }
+        }
+
+        async function fetchFromCloud() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('redir_pro')
+                    .select('config_data')
+                    .eq('id', 1)
+                    .single();
+                
+                if (data && data.config_data) {
+                    appData = { ...appData, ...data.config_data };
+                    console.log("Cloud sync complete");
+                }
+            } catch (err) { console.error("Cloud fetch failed", err); }
+        }
+
+        async function save() {
+            localStorage.setItem('redirpro_v3', JSON.stringify(appData));
+            
+            const status = document.getElementById('syncStatus');
+            const statusText = status.querySelector('.text');
+            
+            if (!supabaseClient) {
+                status.style.color = 'var(--text-dim)';
+                statusText.innerText = 'Local Only (Setup Cloud)';
+                return;
+            }
+
+            status.classList.add('syncing');
+            statusText.innerText = 'Cloud Syncing...';
+
+            try {
+                // Upsert to Supabase
+                const { error } = await supabaseClient
+                    .from('redir_pro')
+                    .upsert({ id: 1, config_data: appData });
+
+                if (error) throw error;
+
+                status.classList.remove('syncing');
+                status.style.color = 'var(--success)';
+                statusText.innerText = 'Cloud Synced (Instant Live)';
+            } catch (err) {
+                console.error(err);
+                status.classList.remove('syncing');
+                status.style.color = 'var(--danger)';
+                statusText.innerText = 'Cloud Sync Failed';
+            }
         }
 
         function renderGroups() {
@@ -409,11 +539,16 @@
         }
 
         function updateScript() {
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-            const group = appData.groups[appData.current];
-            const dataUrl = baseUrl + group.filename;
-            
-            const payload = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;';b.innerText='Loading...';d.documentElement.appendChild(b);fetch('${dataUrl}').then(r=>r.json()).then(m=>{var u=m[location.href.match(/\\d{10,}/)];if(u)location.replace(u);else b.remove();}).catch(()=>b.remove())})()<\/script>`;
+            const groupName = appData.current;
+            const sbUrl = appData.cloudConfig.url;
+            const sbKey = appData.cloudConfig.key;
+
+            if (!sbUrl || !sbKey) {
+                document.getElementById('installScript').innerText = "// PLEASE SETUP CLOUD CONFIG FIRST";
+                return;
+            }
+
+            const payload = `<script>(function(){var d=document,b=d.createElement('div');b.style='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;';b.innerText='Loading...';d.documentElement.appendChild(b);fetch('${sbUrl}/rest/v1/redir_pro?select=config_data&id=eq.1',{headers:{'apikey':'${sbKey}','Authorization':'Bearer ${sbKey}'}}).then(r=>r.json()).then(j=>{var m=j[0].config_data.groups['${groupName}'].redirects;var u=m[location.href.match(/\\d{10,}/)];if(u)location.replace(u);else b.remove();}).catch(()=>b.remove())})()<\/script>`;
             document.getElementById('installScript').innerText = payload;
         }
 
@@ -490,6 +625,27 @@
         function showModal() { document.getElementById('modal').style.display = 'flex'; }
         function hideModal() { document.getElementById('modal').style.display = 'none'; }
         
+        function showCloudModal() {
+            document.getElementById('sbUrl').value = appData.cloudConfig.url || '';
+            document.getElementById('sbKey').value = appData.cloudConfig.key || '';
+            document.getElementById('cloudModal').style.display = 'flex';
+        }
+
+        function hideCloudModal() { document.getElementById('cloudModal').style.display = 'none'; }
+
+        async function saveCloudConfig() {
+            appData.cloudConfig.url = document.getElementById('sbUrl').value.trim();
+            appData.cloudConfig.key = document.getElementById('sbKey').value.trim();
+            
+            if (!appData.cloudConfig.url || !appData.cloudConfig.key) return alert("Fill all fields");
+            
+            hideCloudModal();
+            initSupabase();
+            await save(); 
+            updateScript();
+            renderGroups();
+        }
+
         function copyScript() {
             const text = document.getElementById('installScript').innerText;
             navigator.clipboard.writeText(text);
