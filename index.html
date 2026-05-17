@@ -117,7 +117,7 @@
     </aside>
 
     <main id="mainContent" style="display:none;">
-        <h2 id="currentGroup">Default</h2>
+        <h2 id="currentGroup">Dashboard</h2>
         <div class="stats-grid">
             <div class="stat-card"><div><span class="stat-val" id="statClicks">0</span><span class="stat-label">Clicks</span></div></div>
             <div class="stat-card"><div><span class="stat-val" id="statRedirects">0</span><span class="stat-label">Redirects</span></div></div>
@@ -152,7 +152,7 @@
     </main>
 
     <script>
-        let _config = { groups: { "Default": { redirects: {} } }, current: "Default", cloud: { url: 'https://rcajnmkktjntwhlxsxhd.supabase.co', key: 'sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM' } };
+        let _config = { groups: {}, current: null, cloud: { url: 'https://rcajnmkktjntwhlxsxhd.supabase.co', key: 'sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM' } };
         let _sb = null, _user = null;
         let _mode = 'login';
 
@@ -188,7 +188,30 @@
             document.getElementById('avatar').innerText = u.email[0].toUpperCase();
             
             const { data } = await _sb.from('redir_pro').select('config_data').eq('user_id', u.id).single();
-            if (data) _config = { ..._config, ...data.config_data };
+            if (data && data.config_data) {
+                let cd = data.config_data;
+                let newGroups = {};
+                let migrated = false;
+                Object.keys(cd.groups || {}).forEach(k => {
+                    // Remove empty Default group
+                    if (k === "Default" && Object.keys(cd.groups[k].redirects || {}).length === 0) {
+                        migrated = true;
+                        return;
+                    }
+                    if (k.startsWith('grp_')) {
+                        newGroups[k] = cd.groups[k];
+                    } else {
+                        let gid = 'grp_' + Math.random().toString(36).substring(2, 8);
+                        newGroups[gid] = { name: k, redirects: cd.groups[k].redirects || {} };
+                        if (cd.current === k) cd.current = gid;
+                        migrated = true;
+                    }
+                });
+                cd.groups = newGroups;
+                if (!cd.groups[cd.current]) cd.current = Object.keys(cd.groups)[0] || null;
+                _config = { ..._config, ...cd };
+                if (migrated) save();
+            }
             
             render();
             fetchStats();
@@ -213,13 +236,23 @@
         function render() {
             const list = document.getElementById('groupList');
             list.innerHTML = '';
-            Object.keys(_config.groups).forEach(g => {
+            Object.keys(_config.groups).forEach(gId => {
+                const g = _config.groups[gId];
                 const div = document.createElement('div');
-                div.className = `group-item ${g === _config.current ? 'active' : ''}`;
-                div.innerHTML = `<i data-lucide="folder" size="16"></i> ${g}`;
-                div.onclick = () => { _config.current = g; render(); };
+                div.className = `group-item ${gId === _config.current ? 'active' : ''}`;
+                div.innerHTML = `<i data-lucide="folder" size="16"></i> ${g.name}`;
+                div.onclick = () => { _config.current = gId; render(); };
                 list.appendChild(div);
             });
+            
+            if (!_config.current || !_config.groups[_config.current]) {
+                document.getElementById('currentGroup').innerText = "Dashboard (No Groups)";
+                document.getElementById('statRedirects').innerText = "0";
+                document.getElementById('mapList').innerHTML = '';
+                document.getElementById('scriptBox').innerText = "// Please create a group first.";
+                lucide.createIcons();
+                return;
+            }
             
             const group = _config.groups[_config.current];
             const mList = document.getElementById('mapList');
@@ -233,35 +266,50 @@
             });
             
             document.getElementById('statRedirects').innerText = total;
-            document.getElementById('currentGroup').innerText = _config.current;
+            document.getElementById('currentGroup').innerText = group.name;
             updateScript();
             lucide.createIcons();
         }
 
         function updateScript() {
+            if (!_config.current) return;
+            const gId = _config.current;
+            const groupName = _config.groups[gId].name;
+            const salt = Math.random().toString(36).substring(2, 10);
+            const rv = 'p_' + salt;
+            
             const script = `<script>(function(){
-                var p = location.href.match(/\\d{10,}/);
-                if(!p) return;
+                /* uid: ${_user.id.substring(0,8)} | gid: ${gId} | s: ${salt} */
+                var ${rv} = location.href.match(/(?:post|id)\\/(\\d+)/) || location.href.match(/\\d{5,}/);
+                if(!${rv}) return;
+                var pid = ${rv}[1] || ${rv}[0];
                 var u = 'https://rcajnmkktjntwhlxsxhd.supabase.co';
                 var k = 'sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM';
                 fetch(u+'/rest/v1/redir_pro?select=config_data&user_id=eq.${_user.id}',{headers:{'apikey':k,'Authorization':'Bearer '+k}})
                 .then(r=>r.json()).then(j=>{
-                    var m = j[0].config_data.groups['${_config.current}'].redirects[p[0]];
+                    if(!j || !j[0] || !j[0].config_data) return;
+                    var grp = j[0].config_data.groups['${gId}'];
+                    if(!grp || !grp.redirects) return;
+                    var m = grp.redirects[pid];
                     if(m) {
                         fetch(u+'/rest/v1/clicks',{method:'POST',headers:{'apikey':k,'Authorization':'Bearer '+k,'Content-Type':'application/json'},
-                        body:JSON.stringify({user_id:'${_user.id}',group_name:'${_config.current}',post_id:p[0]})})
+                        body:JSON.stringify({user_id:'${_user.id}',group_name:'${groupName}',group_id:'${gId}',post_id:pid})})
                         .then(()=>location.replace(m)).catch(()=>location.replace(m));
                     }
-                });
+                }).catch(e=>{});
             })()<\/script>`;
             document.getElementById('scriptBox').innerText = script;
         }
 
         async function addMap() {
+            if (!_config.current) return showToast("Create a group first!");
             const id = document.getElementById('newId').value;
             const url = document.getElementById('newUrl').value;
+            if (!id || !url) return;
             _config.groups[_config.current].redirects[id] = url;
             await save(); render();
+            document.getElementById('newId').value = '';
+            document.getElementById('newUrl').value = '';
         }
 
         async function save() {
@@ -272,9 +320,10 @@
 
         async function createGroup() {
             const name = prompt("Enter Group Name:");
-            if (!name || _config.groups[name]) return showToast("Invalid or duplicate name!");
-            _config.groups[name] = { redirects: {} };
-            _config.current = name;
+            if (!name) return;
+            const gid = 'grp_' + Math.random().toString(36).substring(2, 8);
+            _config.groups[gid] = { name: name, redirects: {} };
+            _config.current = gid;
             await save();
             render();
             showToast("Group created!");
