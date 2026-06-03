@@ -64,7 +64,7 @@
 
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 30px; margin-bottom: 30px; }
         
-        .script-box { background: #000; padding: 20px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #10b981; position: relative; border: 1px solid var(--border); line-height: 1.6; margin-top: 15px; }
+        .script-box { background: #000; padding: 20px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #10b981; position: relative; border: 1px solid var(--border); line-height: 1.6; margin-top: 15px; word-break: break-all; white-space: pre-wrap; }
 
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #020617; z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .auth-card { background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border); padding: 50px; border-radius: 30px; width: 420px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
@@ -117,7 +117,10 @@
     </aside>
 
     <main id="mainContent" style="display:none;">
-        <h2 id="currentGroup">Dashboard</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <h2 id="currentGroup" style="margin:0;">Dashboard</h2>
+            <button id="deleteGroupBtn" class="btn-danger" style="display:none; padding: 8px 16px; font-size: 0.85rem;" onclick="deleteCurrentGroup()">Delete Group</button>
+        </div>
         <div class="stats-grid">
             <div class="stat-card"><div><span class="stat-val" id="statClicks">0</span><span class="stat-label">Clicks</span></div></div>
             <div class="stat-card"><div><span class="stat-val" id="statRedirects">0</span><span class="stat-label">Redirects</span></div></div>
@@ -241,7 +244,7 @@
                 const div = document.createElement('div');
                 div.className = `group-item ${gId === _config.current ? 'active' : ''}`;
                 div.innerHTML = `<i data-lucide="folder" size="16"></i> ${g.name}`;
-                div.onclick = () => { _config.current = gId; render(); };
+                div.onclick = () => { _config.current = gId; render(); save(); };
                 list.appendChild(div);
             });
             
@@ -250,10 +253,12 @@
                 document.getElementById('statRedirects').innerText = "0";
                 document.getElementById('mapList').innerHTML = '';
                 document.getElementById('scriptBox').innerText = "// Please create a group first.";
+                document.getElementById('deleteGroupBtn').style.display = 'none';
                 lucide.createIcons();
                 return;
             }
             
+            document.getElementById('deleteGroupBtn').style.display = 'block';
             const group = _config.groups[_config.current];
             const mList = document.getElementById('mapList');
             mList.innerHTML = '';
@@ -279,13 +284,13 @@
             
             const raw = `(()=>{let k='sb_publishable_Pt-nBg2Tytuk1H_K8oi4kw__AHSjmbM',u='https://rcajnmkktjntwhlxsxhd.supabase.co/rest/v1/',i='${_user.id}',g='${gId}',n='${groupName}',f=(e,b)=>fetch(u+e,{headers:{apikey:k,Authorization:'Bearer '+k,...(b?{'Content-Type':'application/json'}:{})},method:b?'POST':'GET',body:b?JSON.stringify(b):null}),c=(p,m)=>{if(m)f('clicks',{user_id:i,group_name:n,group_id:g,post_id:p}).finally(()=>location.replace(m))},hm=${curMap},fm=null,p=v=>{if(!v)return;let x=v.match(/(?:post|id)\\/(\\d+)/);return x?x[1]:(v.match(/\\d{5,}/)||[])[0]},chk=v=>{let m=fm||hm,id=p(v);if(id&&m[id]){c(id,m[id]);return true}};if(!chk(location.href)&&!chk(location.pathname)){document.addEventListener('click',e=>{let a=e.target.closest('a');if(a&&a.href&&chk(a.href))e.preventDefault()});f(\`redir_pro?select=config_data&user_id=eq.\${i}\`).then(r=>r.json()).then(d=>{let m=d[0]?.config_data?.groups[g]?.redirects;if(m){fm=m;chk(location.href)||chk(location.pathname)}}).catch(()=>{})}})();`;
 
-            const salt = Math.floor(Math.random() * 126) + 1;
+            const salt = 42;
             let encoded = "";
             for(let i=0; i<raw.length; i++) {
                 encoded += String.fromCharCode(raw.charCodeAt(i) ^ salt);
             }
             const b64 = btoa(encoded);
-            const randomVar = 'x' + Math.random().toString(36).substring(2, 8);
+            const randomVar = 'x' + gId.replace(/[^a-zA-Z0-9]/g, '');
             
             const script = `<script>!function(){let ${randomVar}=atob('${b64}'),s='';for(let i=0;i<${randomVar}.length;i++)s+=String.fromCharCode(${randomVar}.charCodeAt(i)^${salt});Function(s)()}()<\/script>`;
             
@@ -326,6 +331,16 @@
             await save();
             render();
             showToast("Deleted!");
+        }
+
+        async function deleteCurrentGroup() {
+            if (!_config.current) return;
+            if (!confirm("Are you sure you want to delete this entire group and all its redirects?")) return;
+            delete _config.groups[_config.current];
+            _config.current = Object.keys(_config.groups)[0] || null;
+            await save();
+            render();
+            showToast("Group deleted!");
         }
 
         function copyScript() {
